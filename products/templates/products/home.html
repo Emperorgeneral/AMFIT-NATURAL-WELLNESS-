@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - AMFIT E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="featured-section" style="padding: 0; overflow: hidden; background: linear-gradient(135deg, rgba(14, 74, 63, 0.96), rgba(24, 53, 47, 0.92)); color: #f8f4ec;">
+        <div style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.9fr); gap: 2rem; padding: 3rem; align-items: stretch;">
+            <div>
+                <p class="eyebrow" style="color: rgba(255, 245, 232, 0.78);">Health Essentials, Curated Well</p>
+                <h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.7rem, 6vw, 4.9rem); line-height: 0.98; margin-bottom: 1rem; max-width: 10ch;">A cleaner way to shop wellness and medical essentials.</h1>
+                <p style="max-width: 56ch; color: rgba(248, 244, 236, 0.82); font-size: 1.05rem; margin-bottom: 1.75rem;">AMFIT brings trusted healthcare categories, clearer pricing, and a storefront that feels reliable from first click to checkout.</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.85rem; margin-bottom: 2rem;">
+                    <a href="{% url 'products:category_list' %}" class="btn btn-accent">Browse Categories</a>
+                    <a href="{% url 'users:signup' %}" class="btn btn-secondary" style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.18); color: #fff;">Create Account</a>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; max-width: 680px;">
+                    <div style="padding: 1rem 1rem 0.85rem; border-radius: 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <strong style="display: block; font-size: 1.2rem;">Curated</strong>
+                        <span style="color: rgba(248, 244, 236, 0.75); font-size: 0.92rem;">Focused health categories</span>
+                    </div>
+                    <div style="padding: 1rem 1rem 0.85rem; border-radius: 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <strong style="display: block; font-size: 1.2rem;">Secure</strong>
+                        <span style="color: rgba(248, 244, 236, 0.75); font-size: 0.92rem;">Account-first checkout flow</span>
+                    </div>
+                    <div style="padding: 1rem 1rem 0.85rem; border-radius: 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <strong style="display: block; font-size: 1.2rem;">Clear</strong>
+                        <span style="color: rgba(248, 244, 236, 0.75); font-size: 0.92rem;">Straightforward pricing</span>
+                    </div>
+                </div>
+            </div>
+            <div style="display: grid; gap: 1rem; align-content: center;">
+                <div style="background: linear-gradient(135deg, #f5ecdf, #fffdf8); color: #18352f; border-radius: 28px; padding: 1.4rem; box-shadow: 0 18px 30px rgba(0, 0, 0, 0.14);">
+                    <p class="eyebrow" style="margin-bottom: 0.55rem;">Why AMFIT</p>
+                    <h3 style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; margin-bottom: 0.6rem;">Built for trust, not clutter.</h3>
+                    <p style="color: #5f7069;">The storefront now prioritizes clean hierarchy, a healthcare-appropriate palette, and obvious paths into account creation and shopping.</p>
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 28px; padding: 1.35rem;">
+                    <p style="font-size: 0.9rem; color: rgba(248, 244, 236, 0.72); margin-bottom: 0.35rem;">Customer journey</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <span style="padding: 0.45rem 0.8rem; border-radius: 999px; background: rgba(255, 255, 255, 0.12);">Browse</span>
+                        <span style="padding: 0.45rem 0.8rem; border-radius: 999px; background: rgba(255, 255, 255, 0.12);">Sign Up</span>
+                        <span style="padding: 0.45rem 0.8rem; border-radius: 999px; background: rgba(255, 255, 255, 0.12);">Checkout</span>
+                        <span style="padding: 0.45rem 0.8rem; border-radius: 999px; background: rgba(255, 255, 255, 0.12);">Track Orders</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: end; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <div>
+                <p class="eyebrow">Browse</p>
+                <h2 style="color: var(--ink);">Shop by Category</h2>
+            </div>
+            <p style="max-width: 44ch; color: var(--muted);">Organize products into medical, vitamins, fertility, and other health-driven collections so customers can move quickly.</p>
+        </div>
+        <div class="category-grid">
+            {% for category in categories %}
+            <a href="{% url 'products:category_detail' category.slug %}" class="category-card">
+                <div class="category-image">
+                    {% if category.image %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                    {% else %}
+                        <span style="color: #999;">No Image</span>
+                    {% endif %}
+                </div>
+                <div class="category-info">
+                    <div class="category-name">{{ category.name }}</div>
+                    {% if category.description %}
+                        <p style="font-size: 12px; color: #666;">{{ category.description|truncatewords:10 }}</p>
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-state">
+                <strong style="display: block; margin-bottom: 0.35rem;">No categories yet</strong>
+                <span>Add product categories from the admin dashboard to populate this area.</span>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="featured-section">
+        <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: end; flex-wrap: wrap;">
+            <div>
+                <p class="eyebrow">Inventory Spotlight</p>
+                <h2>Featured Products</h2>
+            </div>
+            <a href="{% url 'products:category_list' %}" class="btn btn-secondary">View all categories</a>
+        </div>
+        <div class="product-grid">
+            {% for product in featured_products %}
+            <a href="{% url 'products:product_detail' product.slug %}" class="product-card">
+                <div class="product-image">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <span style="color: #999;">No Image</span>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-name">{{ product.name }}</div>
+                    {% if product.is_on_sale %}
+                        <div class="product-price">
+                            ₦{{ product.discounted_price }}
+                            <span class="original-price">₦{{ product.price }}</span>
+                            <span class="discount-badge">-{{ product.discount_percentage }}%</span>
+                        </div>
+                    {% else %}
+                        <div class="product-price">₦{{ product.price }}</div>
+                    {% endif %}
+                    {% if product.rating %}
+                        <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }} reviews)</div>
+                    {% endif %}
+                    <div style="margin-top: 0.75rem;">
+                        <span class="btn btn-primary" style="width: 100%; text-align: center;">View Details</span>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-state">
+                <strong style="display: block; margin-bottom: 0.35rem;">No featured products yet</strong>
+                <span>Add products in the admin area and they will appear here automatically.</span>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

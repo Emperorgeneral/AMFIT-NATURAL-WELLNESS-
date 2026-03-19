@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Order History | AMFIT{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="{% url 'products:home' %}">Home</a> / Orders
+    </div>
+
+    <section class="featured-section">
+        <p class="eyebrow">Purchase History</p>
+        <h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 0.5rem;">Track your recent orders</h1>
+        <p style="color: var(--muted); max-width: 52ch; margin-bottom: 1.5rem;">Customers can review order status, payment state, and line items here after checkout.</p>
+
+        {% if orders %}
+            <div style="display: grid; gap: 1rem;">
+                {% for order in orders %}
+                <article style="background: #fff; border: 1px solid var(--border); border-radius: 24px; padding: 1.35rem; box-shadow: var(--shadow-card);">
+                    <div style="display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="font-family: Georgia, 'Times New Roman', serif; margin-bottom: 0.2rem;">{{ order.order_number }}</h3>
+                            <p style="color: var(--muted); font-size: 0.92rem;">Placed on {{ order.created_at|date:"F d, Y" }}</p>
+                        </div>
+                        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;">
+                            <span class="btn btn-secondary" style="cursor: default;">{{ order.get_status_display }}</span>
+                            <span class="btn btn-secondary" style="cursor: default;">Payment: {{ order.get_payment_status_display }}</span>
+                            <strong style="color: var(--brand); font-size: 1.1rem;">₦{{ order.total }}</strong>
+                        </div>
+                    </div>
+                    <div style="display: grid; gap: 0.6rem; color: var(--muted);">
+                        {% for item in order.items.all %}
+                        <div style="display: flex; justify-content: space-between; gap: 1rem;">
+                            <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                            <strong style="color: var(--ink);">₦{{ item.total }}</strong>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <strong style="display: block; margin-bottom: 0.35rem;">No orders yet</strong>
+                <span>Once you complete checkout, your purchases will be listed here.</span>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

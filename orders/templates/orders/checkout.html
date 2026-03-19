@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout | AMFIT{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="{% url 'products:home' %}">Home</a> /
+        <a href="{% url 'orders:cart_detail' %}">Cart</a> / Checkout
+    </div>
+
+    <section class="featured-section">
+        <p class="eyebrow">Checkout</p>
+        <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: end; flex-wrap: wrap; margin-bottom: 1.5rem;">
+            <div>
+                <h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2rem, 4vw, 3rem);">Confirm delivery details</h1>
+                <p style="color: var(--muted); max-width: 52ch;">This completes the pre-payment order flow. Flutterwave can plug into this step next.</p>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr); gap: 1.5rem; align-items: start;">
+            <form method="post" class="auth-card" style="padding: 1.8rem;">
+                {% csrf_token %}
+                <div class="auth-form auth-grid">
+                    {% for field in form %}
+                    <div class="form-row"{% if field.name == 'shipping_address' or field.name == 'notes' %} style="grid-column: 1 / -1;"{% endif %}>
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {{ field.errors }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1.25rem;">
+                    <button type="submit" class="btn btn-accent">Place order</button>
+                    <a href="{% url 'orders:cart_detail' %}" class="btn btn-secondary">Back to cart</a>
+                </div>
+            </form>
+
+            <aside class="filters" style="position: sticky; top: 2rem;">
+                <p class="eyebrow">Order Summary</p>
+                <div style="display: grid; gap: 0.8rem; margin-bottom: 1rem;">
+                    {% for item in cart_items %}
+                    <div style="display: flex; justify-content: space-between; gap: 0.8rem; color: var(--muted);">
+                        <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                        <strong style="color: var(--ink);">₦{{ item.total }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="display: grid; gap: 0.8rem; color: var(--muted);">
+                    <div style="display: flex; justify-content: space-between;"><span>Subtotal</span><strong style="color: var(--ink);">₦{{ subtotal }}</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Shipping</span><strong style="color: var(--ink);">₦{{ shipping }}</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Tax</span><strong style="color: var(--ink);">₦{{ tax }}</strong></div>
+                    <div style="height: 1px; background: var(--border); margin: 0.3rem 0;"></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.12rem;"><span>Total</span><strong style="color: var(--brand);">₦{{ total }}</strong></div>
+                </div>
+            </aside>
+        </div>
+    </section>
+</div>
+{% endblock %}
