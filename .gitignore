@@ -68,5 +68,4 @@ Thumbs.db
 .DS_Store
 
 # Static and Media
-/static/
 /media/
