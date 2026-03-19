@@ -3,14 +3,23 @@
 {% block title %}Search Results - AMFIT E-Commerce{% endblock %}
 
 {% block content %}
+<style>
+.sr-eyebrow { color: rgba(248, 244, 236, 0.75); }
+.sr-title { color: #f8f4ec; margin-bottom: 0.5rem; }
+.btn-full { width: 100%; }
+.image-fallback { color: #999; }
+.product-cta-wrap { margin-top: 0.75rem; }
+.product-cta-full { width: 100%; text-align: center; }
+.empty-state-title { display: block; margin-bottom: 0.35rem; }
+</style>
 <div class="container">
     <div class="breadcrumb">
         <a href="{% url 'products:home' %}">Home</a> / Search Results
     </div>
 
     <section class="hero-strip">
-        <p class="eyebrow" style="color: rgba(248, 244, 236, 0.75);">Search</p>
-        <h1 class="catalog-title" style="color: #f8f4ec; margin-bottom: 0.5rem;">Search Results{% if query %} for "{{ query }}"{% endif %}</h1>
+        <p class="eyebrow sr-eyebrow">Search</p>
+        <h1 class="catalog-title sr-title">Search Results{% if query %} for "{{ query }}"{% endif %}</h1>
         <p>Search across categories and refine product discovery with clear catalog filters.</p>
         <div class="metric-row">
             <span class="metric-pill">{{ page_obj.paginator.count }} product(s) found</span>
@@ -38,7 +47,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn" style="width: 100%;">Search</button>
+                    <button type="submit" class="btn btn-full">Search</button>
                 </form>
             </div>
         </aside>
@@ -52,7 +61,7 @@
                         {% if product.image %}
                             <img src="{{ product.image.url }}" alt="{{ product.name }}">
                         {% else %}
-                            <span style="color: #999;">No Image</span>
+                            <span class="image-fallback">No Image</span>
                         {% endif %}
                     </div>
                     <div class="product-info">
@@ -69,8 +78,8 @@
                         {% if product.rating %}
                             <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }} reviews)</div>
                         {% endif %}
-                        <div style="margin-top: 0.75rem;">
-                            <span class="btn btn-primary" style="width: 100%; text-align: center;">View Details</span>
+                        <div class="product-cta-wrap">
+                            <span class="btn btn-primary product-cta-full">View Details</span>
                         </div>
                     </div>
                 </a>
@@ -101,7 +110,7 @@
             {% endif %}
             {% else %}
             <div class="empty-state">
-                <strong style="display: block; margin-bottom: 0.35rem;">No search results</strong>
+                <strong class="empty-state-title">No search results</strong>
                 <span>{% if query %}No products found matching "{{ query }}". Try a different search term.{% else %}Enter a search term to find products.{% endif %}</span>
             </div>
             {% endif %}
