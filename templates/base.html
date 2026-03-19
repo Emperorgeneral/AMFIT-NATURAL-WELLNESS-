@@ -538,6 +538,39 @@
             padding-bottom: 0;
         }
 
+        /* ── Hamburger button ── */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            margin-left: auto;
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+
+        .hamburger:hover { background: rgba(15,92,77,0.08); }
+
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 2.5px;
+            background: var(--ink);
+            border-radius: 2px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5.5px); }
+        .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5.5px); }
+
+        /* On desktop nav-collapse is transparent wrapper */
+        .nav-collapse { display: contents; }
+
         @media (max-width: 960px) {
             .catalog-shell,
             .detail-shell {
@@ -647,24 +680,6 @@
         }
 
         @media (max-width: 960px) {
-            nav {
-                border-radius: 28px;
-                flex-wrap: wrap;
-                padding: 1rem;
-            }
-
-            .logo,
-            .nav-actions {
-                padding: 0;
-            }
-
-            .search-box {
-                order: 3;
-                max-width: 100%;
-                width: 100%;
-                margin: 0;
-            }
-
             footer {
                 flex-direction: column;
                 text-align: center;
@@ -680,21 +695,85 @@
             }
         }
 
-        @media (max-width: 680px) {
-            .logo img {
-                height: 40px;
+        /* ── Mobile nav ── */
+        @media (max-width: 768px) {
+            body { overflow-x: hidden; }
+
+            header { padding: 0.75rem 0.75rem 0; }
+
+            nav {
+                border-radius: 20px;
+                padding: 0.75rem 1rem;
+                min-height: unset;
+                flex-wrap: wrap;
+                gap: 0;
             }
 
-            .nav-menu {
+            .hamburger { display: flex; }
+
+            .logo { padding-left: 0.25rem; }
+
+            /* Collapsible panel */
+            .nav-collapse {
+                display: none;
                 width: 100%;
-                justify-content: center;
+                flex-direction: column;
+                gap: 0.85rem;
+                padding: 0.85rem 0 0.25rem;
+                border-top: 1px solid var(--border);
+                margin-top: 0.75rem;
+            }
+
+            .nav-collapse.open { display: flex; }
+
+            .nav-menu {
+                flex-direction: row;
                 flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: flex-start;
+            }
+
+            .nav-menu a {
+                padding: 0.45rem 0.9rem;
+                background: rgba(15,92,77,0.07);
+                border-radius: 999px;
+                font-size: 0.93rem;
+            }
+
+            .search-box {
+                max-width: 100%;
+                width: 100%;
+                margin: 0;
             }
 
             .nav-actions {
-                width: 100%;
-                justify-content: center;
                 flex-wrap: wrap;
+                justify-content: flex-start;
+                gap: 0.5rem;
+            }
+
+            .nav-utility {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .container {
+                padding: 1.5rem 0.75rem 3rem;
+            }
+
+            .category-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .auth-card {
+                padding: 1.5rem 1rem;
+                border-radius: 20px;
             }
         }
     </style>
@@ -706,28 +785,33 @@
                 <img src="{% static 'android-chrome-192x192.png' %}" alt="amfit" style="height:46px;width:46px;border-radius:10px;">
                 <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.45rem; font-weight: 700; letter-spacing: 0.06em; color: #0a4137; margin-left: 0.55rem;">amfit</span>
             </a>
-            <div class="nav-menu">
-                <a href="{% url 'products:home' %}">Home</a>
-                <a href="{% url 'products:category_list' %}">Categories</a>
-            </div>
-            <form method="GET" action="{% url 'products:search_products' %}" class="search-box">
-                <input type="text" name="q" placeholder="Search products..." required>
-            </form>
-            <div class="nav-actions">
-                {% if request.user.is_authenticated %}
-                    <div class="nav-utility">
-                        <a href="{% url 'orders:cart_detail' %}" class="btn btn-secondary">Cart</a>
-                        <a href="{% url 'orders:order_history' %}" class="btn btn-secondary">Orders</a>
-                    </div>
-                    <span class="nav-greeting">Hello, {{ request.user.first_name|default:request.user.username }}</span>
-                    <form method="post" action="{% url 'users:logout' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-secondary">Log Out</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'users:login' %}" class="btn btn-secondary">Log In</a>
-                    <a href="{% url 'users:signup' %}" class="btn btn-accent">Sign Up</a>
-                {% endif %}
+            <button class="hamburger" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="nav-collapse" id="nav-collapse">
+                <div class="nav-menu">
+                    <a href="{% url 'products:home' %}">Home</a>
+                    <a href="{% url 'products:category_list' %}">Categories</a>
+                </div>
+                <form method="GET" action="{% url 'products:search_products' %}" class="search-box">
+                    <input type="text" name="q" placeholder="Search products..." required>
+                </form>
+                <div class="nav-actions">
+                    {% if request.user.is_authenticated %}
+                        <div class="nav-utility">
+                            <a href="{% url 'orders:cart_detail' %}" class="btn btn-secondary">Cart</a>
+                            <a href="{% url 'orders:order_history' %}" class="btn btn-secondary">Orders</a>
+                        </div>
+                        <span class="nav-greeting">Hello, {{ request.user.first_name|default:request.user.username }}</span>
+                        <form method="post" action="{% url 'users:logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary">Log Out</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'users:login' %}" class="btn btn-secondary">Log In</a>
+                        <a href="{% url 'users:signup' %}" class="btn btn-accent">Sign Up</a>
+                    {% endif %}
+                </div>
             </div>
         </nav>
     </header>
@@ -748,5 +832,16 @@
         <p>&copy; {% now "Y" %} AMFIT E-Commerce. All rights reserved.</p>
         <p>Professional healthcare retail for modern customers.</p>
     </footer>
+    <script>
+        const toggle = document.getElementById('nav-toggle');
+        const collapse = document.getElementById('nav-collapse');
+        if (toggle && collapse) {
+            toggle.addEventListener('click', () => {
+                const isOpen = collapse.classList.toggle('open');
+                toggle.classList.toggle('open', isOpen);
+                toggle.setAttribute('aria-expanded', isOpen);
+            });
+        }
+    </script>
 </body>
 </html>
