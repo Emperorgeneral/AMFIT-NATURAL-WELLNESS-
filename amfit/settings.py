@@ -19,6 +19,10 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-development-key-chang
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
+# Railway production safety: never expose debug pages in hosted environment.
+if os.getenv('RAILWAY_ENVIRONMENT'):
+    DEBUG = False
+
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
     default='localhost,127.0.0.1,amfitnaturalwellness.com,www.amfitnaturalwellness.com',
