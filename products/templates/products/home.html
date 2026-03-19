@@ -3,45 +3,109 @@
 {% block title %}Home - AMFIT E-Commerce{% endblock %}
 
 {% block content %}
+<style>
+    .hero-section {
+        padding: 0;
+        overflow: hidden;
+        background: linear-gradient(135deg, rgba(14,74,63,0.96), rgba(24,53,47,0.92));
+        color: #f8f4ec;
+        border-radius: var(--radius-lg);
+        margin-bottom: 2rem;
+    }
+    .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.9fr);
+        gap: 2rem;
+        padding: 3rem;
+        align-items: stretch;
+    }
+    .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        max-width: 680px;
+    }
+    .hero-stat {
+        padding: 1rem 1rem 0.85rem;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+    .hero-cards { display: grid; gap: 1rem; align-content: center; }
+    .hero-card-light {
+        background: linear-gradient(135deg, #f5ecdf, #fffdf8);
+        color: #18352f;
+        border-radius: 28px;
+        padding: 1.4rem;
+        box-shadow: 0 18px 30px rgba(0,0,0,0.14);
+    }
+    .hero-card-dark {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 28px;
+        padding: 1.35rem;
+    }
+    .journey-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .journey-tag {
+        padding: 0.45rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.12);
+    }
+    @media (max-width: 768px) {
+        .hero-grid {
+            grid-template-columns: 1fr;
+            padding: 1.5rem 1.25rem;
+            gap: 1.25rem;
+        }
+        .hero-stats {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.6rem;
+            max-width: 100%;
+        }
+        .hero-stat strong { font-size: 1rem; }
+        .hero-stat span { font-size: 0.8rem; }
+    }
+</style>
+
 <div class="container">
-    <section class="featured-section" style="padding: 0; overflow: hidden; background: linear-gradient(135deg, rgba(14, 74, 63, 0.96), rgba(24, 53, 47, 0.92)); color: #f8f4ec;">
-        <div style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.9fr); gap: 2rem; padding: 3rem; align-items: stretch;">
+    <section class="hero-section featured-section">
+        <div class="hero-grid">
             <div>
-                <p class="eyebrow" style="color: rgba(255, 245, 232, 0.78);">Health Essentials, Curated Well</p>
-                <h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.7rem, 6vw, 4.9rem); line-height: 0.98; margin-bottom: 1rem; max-width: 10ch;">A cleaner way to shop wellness and medical essentials.</h1>
-                <p style="max-width: 56ch; color: rgba(248, 244, 236, 0.82); font-size: 1.05rem; margin-bottom: 1.75rem;">AMFIT brings trusted healthcare categories, clearer pricing, and a storefront that feels reliable from first click to checkout.</p>
+                <p class="eyebrow" style="color: rgba(255,245,232,0.78);">Health Essentials, Curated Well</p>
+                <h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2rem, 6vw, 4.9rem); line-height: 1.05; margin-bottom: 1rem;">A cleaner way to shop wellness and medical essentials.</h1>
+                <p style="color: rgba(248,244,236,0.82); font-size: 1.05rem; margin-bottom: 1.75rem;">AMFIT brings trusted healthcare categories, clearer pricing, and a storefront that feels reliable from first click to checkout.</p>
                 <div style="display: flex; flex-wrap: wrap; gap: 0.85rem; margin-bottom: 2rem;">
                     <a href="{% url 'products:category_list' %}" class="btn btn-accent">Browse Categories</a>
-                    <a href="{% url 'users:signup' %}" class="btn btn-secondary" style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.18); color: #fff;">Create Account</a>
+                    <a href="{% url 'users:signup' %}" class="btn btn-secondary" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); color: #fff;">Create Account</a>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; max-width: 680px;">
-                    <div style="padding: 1rem 1rem 0.85rem; border-radius: 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.08);">
-                        <strong style="display: block; font-size: 1.2rem;">Curated</strong>
-                        <span style="color: rgba(248, 244, 236, 0.75); font-size: 0.92rem;">Focused health categories</span>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <strong style="display: block;">Curated</strong>
+                        <span style="color: rgba(248,244,236,0.75); font-size: 0.92rem;">Focused health categories</span>
                     </div>
-                    <div style="padding: 1rem 1rem 0.85rem; border-radius: 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.08);">
-                        <strong style="display: block; font-size: 1.2rem;">Secure</strong>
-                        <span style="color: rgba(248, 244, 236, 0.75); font-size: 0.92rem;">Account-first checkout flow</span>
+                    <div class="hero-stat">
+                        <strong style="display: block;">Secure</strong>
+                        <span style="color: rgba(248,244,236,0.75); font-size: 0.92rem;">Account-first checkout flow</span>
                     </div>
-                    <div style="padding: 1rem 1rem 0.85rem; border-radius: 20px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.08);">
-                        <strong style="display: block; font-size: 1.2rem;">Clear</strong>
-                        <span style="color: rgba(248, 244, 236, 0.75); font-size: 0.92rem;">Straightforward pricing</span>
+                    <div class="hero-stat">
+                        <strong style="display: block;">Clear</strong>
+                        <span style="color: rgba(248,244,236,0.75); font-size: 0.92rem;">Straightforward pricing</span>
                     </div>
                 </div>
             </div>
-            <div style="display: grid; gap: 1rem; align-content: center;">
-                <div style="background: linear-gradient(135deg, #f5ecdf, #fffdf8); color: #18352f; border-radius: 28px; padding: 1.4rem; box-shadow: 0 18px 30px rgba(0, 0, 0, 0.14);">
-                    <p class="eyebrow" style="margin-bottom: 0.55rem;">Why AMFIT</p>
+            <div class="hero-cards">
+                <div class="hero-card-light">
+                    <p class="eyebrow" style="margin-bottom: 0.55rem; color: #5f7069;">Why AMFIT</p>
                     <h3 style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; margin-bottom: 0.6rem;">Built for trust, not clutter.</h3>
-                    <p style="color: #5f7069;">The storefront now prioritizes clean hierarchy, a healthcare-appropriate palette, and obvious paths into account creation and shopping.</p>
+                    <p style="color: #5f7069;">The storefront prioritizes clean hierarchy, a healthcare-appropriate palette, and obvious paths into account creation and shopping.</p>
                 </div>
-                <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 28px; padding: 1.35rem;">
-                    <p style="font-size: 0.9rem; color: rgba(248, 244, 236, 0.72); margin-bottom: 0.35rem;">Customer journey</p>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                        <span style="padding: 0.45rem 0.8rem; border-radius: 999px; background: rgba(255, 255, 255, 0.12);">Browse</span>
-                        <span style="padding: 0.45rem 0.8rem; border-radius: 999px; background: rgba(255, 255, 255, 0.12);">Sign Up</span>
-                        <span style="padding: 0.45rem 0.8rem; border-radius: 999px; background: rgba(255, 255, 255, 0.12);">Checkout</span>
-                        <span style="padding: 0.45rem 0.8rem; border-radius: 999px; background: rgba(255, 255, 255, 0.12);">Track Orders</span>
+                <div class="hero-card-dark">
+                    <p style="font-size: 0.9rem; color: rgba(248,244,236,0.72); margin-bottom: 0.35rem;">Customer journey</p>
+                    <div class="journey-tags">
+                        <span class="journey-tag">Browse</span>
+                        <span class="journey-tag">Sign Up</span>
+                        <span class="journey-tag">Checkout</span>
+                        <span class="journey-tag">Track Orders</span>
                     </div>
                 </div>
             </div>
