@@ -172,6 +172,11 @@ REST_FRAMEWORK = {
 LOGIN_URL = '/account/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+ADMIN_URL = config('ADMIN_URL', default='admin/')
+SESSION_ENGINE = config(
+    'SESSION_ENGINE',
+    default='django.contrib.sessions.backends.signed_cookies',
+)
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
