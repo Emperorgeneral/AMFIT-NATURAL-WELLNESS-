@@ -1,13 +1,28 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Avg, Q
+from django.db.utils import OperationalError, ProgrammingError
 from django.core.paginator import Paginator
 from .models import Product, Category, Subcategory, ProductReview
 
 
+def _db_ready():
+    """Return False when migrations have not been applied yet in production."""
+    try:
+        Category.objects.exists()
+        Product.objects.exists()
+        return True
+    except (OperationalError, ProgrammingError):
+        return False
+
+
 def home(request):
     """Home page with featured products"""
-    featured_products = Product.objects.filter(status='active')[:8]
-    categories = Category.objects.all()
+    if _db_ready():
+        featured_products = Product.objects.filter(status='active')[:8]
+        categories = Category.objects.all()
+    else:
+        featured_products = Product.objects.none()
+        categories = Category.objects.none()
     context = {
         'featured_products': featured_products,
         'categories': categories,
@@ -17,7 +32,10 @@ def home(request):
 
 def category_list(request):
     """Display all categories"""
-    categories = Category.objects.all()
+    if _db_ready():
+        categories = Category.objects.all()
+    else:
+        categories = Category.objects.none()
     context = {
         'categories': categories,
     }
@@ -133,6 +151,16 @@ def search_products(request):
     """Search for products across all categories"""
     query = request.GET.get('q', '')
     sort_by = request.GET.get('sort', '-created_at')
+
+    if not _db_ready():
+        context = {
+            'query': query,
+            'page_obj': Paginator(Product.objects.none(), 12).get_page(1),
+            'products': Product.objects.none(),
+            'sort_by': sort_by,
+        }
+        return render(request, 'products/search_results.html', context)
+
     products = Product.objects.filter(status='active')
     
     if query:
