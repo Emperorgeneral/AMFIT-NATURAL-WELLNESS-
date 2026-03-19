@@ -172,7 +172,7 @@ REST_FRAMEWORK = {
 LOGIN_URL = '/account/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-ADMIN_URL = config('ADMIN_URL', default='admin/')
+ADMIN_URL = f"{config('ADMIN_URL', default='admin/').strip('/')}/"
 SESSION_ENGINE = config(
     'SESSION_ENGINE',
     default='django.contrib.sessions.backends.signed_cookies',
