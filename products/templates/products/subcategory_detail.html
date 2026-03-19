@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ subcategory.name }} - AMFIT E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="{% url 'products:home' %}">Home</a> / 
+        <a href="{% url 'products:category_list' %}">Categories</a> / 
+        <a href="{% url 'products:category_detail' category.slug %}">{{ category.name }}</a> / 
+        {{ subcategory.name }}
+    </div>
+
+    <section class="hero-strip">
+        <p class="eyebrow" style="color: rgba(248, 244, 236, 0.75);">Subcategory View</p>
+        <h1 class="catalog-title" style="color: #f8f4ec; margin-bottom: 0.5rem;">{{ subcategory.name }}</h1>
+        {% if subcategory.description %}
+            <p>{{ subcategory.description }}</p>
+        {% endif %}
+        <div class="metric-row">
+            <span class="metric-pill">Inside {{ category.name }}</span>
+            <span class="metric-pill">{{ page_obj.paginator.count }} products available</span>
+        </div>
+    </section>
+
+    <div class="catalog-shell" style="margin-top: 2rem;">
+        <aside>
+            <div class="filters">
+                <p class="eyebrow">Filter Products</p>
+                <form method="GET">
+                    <div class="filter-group">
+                        <label for="search">Search:</label>
+                        <input type="text" name="search" id="search" value="{{ search_query }}" placeholder="Product name...">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="price_min">Min Price:</label>
+                        <input type="number" name="price_min" id="price_min" value="{{ price_min|default:'' }}" placeholder="0" min="0">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="price_max">Max Price:</label>
+                        <input type="number" name="price_max" id="price_max" value="{{ price_max|default:'' }}" placeholder="999999" min="0">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sort">Sort by:</label>
+                        <select name="sort" id="sort">
+                            <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest</option>
+                            <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="-price" {% if sort_by == '-price' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name: A to Z</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn" style="width: 100%;">Apply Filters</button>
+                </form>
+            </div>
+        </aside>
+
+        <section>
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Selection</p>
+                    <h2 style="font-family: Georgia, 'Times New Roman', serif;">{{ page_obj.paginator.count }} items found</h2>
+                </div>
+            </div>
+            
+            {% if products %}
+            <div class="product-grid">
+                {% for product in products %}
+                <a href="{% url 'products:product_detail' product.slug %}" class="product-card">
+                    <div class="product-image">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <span style="color: #999;">No Image</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">{{ product.name|truncatewords:3 }}</div>
+                        {% if product.is_on_sale %}
+                            <div class="product-price">
+                                ₦{{ product.discounted_price }}
+                                <span class="original-price">₦{{ product.price }}</span>
+                                <span class="discount-badge">-{{ product.discount_percentage }}%</span>
+                            </div>
+                        {% else %}
+                            <div class="product-price">₦{{ product.price }}</div>
+                        {% endif %}
+                        {% if product.rating %}
+                            <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }} reviews)</div>
+                        {% endif %}
+                        <div style="margin-top: 0.75rem;">
+                            <span class="btn btn-primary" style="width: 100%; text-align: center;">View product</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="current">{{ num }}</span>
+                    {% else %}
+                        <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">Last</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="empty-state">
+                <strong style="display: block; margin-bottom: 0.35rem;">No products in this subcategory</strong>
+                <span>Try another subcategory or seed more sample products.</span>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

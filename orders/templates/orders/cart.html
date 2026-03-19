@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Cart | AMFIT{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="{% url 'products:home' %}">Home</a> / Cart
+    </div>
+
+    <section class="featured-section">
+        <p class="eyebrow">Shopping Cart</p>
+        <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: end; flex-wrap: wrap; margin-bottom: 1.5rem;">
+            <div>
+                <h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2rem, 4vw, 3rem);">Review your selected items</h1>
+                <p style="color: var(--muted); max-width: 52ch;">Adjust quantities, confirm totals, and continue to checkout when you are ready.</p>
+            </div>
+            <a href="{% url 'products:category_list' %}" class="btn btn-secondary">Continue shopping</a>
+        </div>
+
+        {% if cart_items %}
+        <div style="display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.8fr); gap: 1.5rem; align-items: start;">
+            <div style="display: grid; gap: 1rem;">
+                {% for item in cart_items %}
+                <article style="display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 24px; background: #fff;">
+                    <div class="product-image" style="height: 130px; border-radius: 18px;">
+                        {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                        {% else %}
+                            <span style="color: var(--muted);">No Image</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: start; flex-wrap: wrap; margin-bottom: 0.8rem;">
+                            <div>
+                                <h3 style="font-family: Georgia, 'Times New Roman', serif; margin-bottom: 0.2rem;">{{ item.product.name }}</h3>
+                                <p style="color: var(--muted); font-size: 0.92rem;">{{ item.product.category.name }} / {{ item.product.subcategory.name }}</p>
+                            </div>
+                            <strong style="font-size: 1.1rem; color: var(--brand);">₦{{ item.total }}</strong>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                            <form method="post" action="{% url 'orders:update_cart_item' item.id %}" style="display: flex; align-items: center; gap: 0.8rem;">
+                                {% csrf_token %}
+                                <label for="quantity-{{ item.id }}" style="font-weight: 700;">Qty</label>
+                                <input id="quantity-{{ item.id }}" type="number" min="1" name="quantity" value="{{ item.quantity }}" style="width: 84px; padding: 0.7rem 0.9rem; border-radius: 14px; border: 1px solid var(--border);">
+                                <button type="submit" class="btn btn-secondary">Update</button>
+                            </form>
+
+                            <form method="post" action="{% url 'orders:remove_cart_item' item.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+
+            <aside class="filters" style="position: sticky; top: 2rem;">
+                <p class="eyebrow">Summary</p>
+                <h3 style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; margin-bottom: 1rem;">Order overview</h3>
+                <div style="display: grid; gap: 0.8rem; color: var(--muted);">
+                    <div style="display: flex; justify-content: space-between;"><span>Subtotal</span><strong style="color: var(--ink);">₦{{ subtotal }}</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Shipping</span><strong style="color: var(--ink);">₦{{ shipping }}</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Estimated tax</span><strong style="color: var(--ink);">₦{{ tax }}</strong></div>
+                    <div style="height: 1px; background: var(--border); margin: 0.3rem 0;"></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.12rem;"><span>Total</span><strong style="color: var(--brand);">₦{{ total }}</strong></div>
+                </div>
+                <a href="{% url 'orders:checkout' %}" class="btn btn-accent" style="width: 100%; margin-top: 1.4rem; text-align: center;">Proceed to checkout</a>
+                <p style="font-size: 0.88rem; color: var(--muted); margin-top: 0.75rem;">Free shipping applies automatically on orders above ₦25,000.</p>
+            </aside>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <strong style="display: block; margin-bottom: 0.35rem;">Your cart is empty</strong>
+            <span>Add some sample products from the catalog to start the checkout flow.</span>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

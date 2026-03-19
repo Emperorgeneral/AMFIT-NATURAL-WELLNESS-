@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up | AMFIT{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="auth-card auth-card-wide">
+        <div class="auth-intro">
+            <p class="eyebrow">Create Account</p>
+            <h1>Set up your AMFIT profile</h1>
+            <p>Create your account to place orders, view purchase history, and manage delivery details.</p>
+        </div>
+
+        <form method="post" class="auth-form auth-grid">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-row">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-help">{{ field.help_text|safe }}</small>
+                    {% endif %}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+
+            <div class="auth-actions">
+                <button type="submit" class="btn btn-primary auth-submit">Create Account</button>
+                <p class="auth-switch">Already have an account? <a href="{% url 'users:login' %}">Log in</a></p>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
