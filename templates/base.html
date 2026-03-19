@@ -63,6 +63,7 @@
             gap: 1rem;
             background: rgba(255, 255, 255, 0.72);
             border: 1px solid rgba(255, 255, 255, 0.7);
+            -webkit-backdrop-filter: blur(18px);
             backdrop-filter: blur(18px);
             border-radius: 999px;
             box-shadow: var(--shadow-soft);
@@ -82,6 +83,15 @@
             object-fit: contain;
             border-radius: 10px;
             display: block;
+        }
+
+        .logo-mark {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: #0a4137;
+            margin-left: 0.55rem;
         }
 
         .nav-menu {
@@ -782,8 +792,8 @@
     <header>
         <nav>
             <a href="{% url 'products:home' %}" class="logo" aria-label="AMFIT Home">
-                <img src="{% static 'android-chrome-192x192.png' %}" alt="amfit" style="height:46px;width:46px;border-radius:10px;">
-                <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.45rem; font-weight: 700; letter-spacing: 0.06em; color: #0a4137; margin-left: 0.55rem;">amfit</span>
+                <img src="{% static 'android-chrome-192x192.png' %}" alt="amfit">
+                <span class="logo-mark">amfit</span>
             </a>
             <button class="hamburger" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
                 <span></span><span></span><span></span>

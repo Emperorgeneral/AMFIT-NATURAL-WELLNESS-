@@ -3,6 +3,34 @@
 {% block title %}{{ category.name }} - AMFIT E-Commerce{% endblock %}
 
 {% block content %}
+<style>
+    .hero-eyebrow-soft { color: rgba(248, 244, 236, 0.75); }
+    .hero-title-light {
+        color: #f8f4ec;
+        margin-bottom: 0.5rem;
+    }
+    .section-title-serif {
+        font-family: Georgia, 'Times New Roman', serif;
+    }
+    .subcategory-wrap { margin-bottom: 2rem; }
+    .subcategory-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    .catalog-shell-top { margin-top: 2rem; }
+    .btn-full { width: 100%; }
+    .image-fallback { color: #999; }
+    .product-cta-wrap { margin-top: 0.75rem; }
+    .product-cta-full {
+        width: 100%;
+        text-align: center;
+    }
+    .empty-state-title {
+        display: block;
+        margin-bottom: 0.35rem;
+    }
+</style>
 <div class="container">
     <div class="breadcrumb">
         <a href="{% url 'products:home' %}">Home</a> / 
@@ -11,8 +39,8 @@
     </div>
 
     <section class="hero-strip">
-        <p class="eyebrow" style="color: rgba(248, 244, 236, 0.75);">Category View</p>
-        <h1 class="catalog-title" style="color: #f8f4ec; margin-bottom: 0.5rem;">{{ category.name }}</h1>
+        <p class="eyebrow hero-eyebrow-soft">Category View</p>
+        <h1 class="catalog-title hero-title-light">{{ category.name }}</h1>
         {% if category.description %}
             <p>{{ category.description }}</p>
         {% endif %}
@@ -26,11 +54,11 @@
     <div class="section-head">
         <div>
             <p class="eyebrow">Refine</p>
-            <h2 style="font-family: Georgia, 'Times New Roman', serif;">Subcategories</h2>
+            <h2 class="section-title-serif">Subcategories</h2>
         </div>
     </div>
-    <div style="margin-bottom: 2rem;">
-        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+    <div class="subcategory-wrap">
+        <div class="subcategory-row">
             {% for subcategory in subcategories %}
             <a href="{% url 'products:subcategory_detail' category.slug subcategory.slug %}" class="btn btn-secondary">
                 {{ subcategory.name }}
@@ -40,7 +68,7 @@
     </div>
     {% endif %}
 
-    <div class="catalog-shell" style="margin-top: 2rem;">
+    <div class="catalog-shell catalog-shell-top">
         <aside>
             <div class="filters">
                 <p class="eyebrow">Filter Products</p>
@@ -70,7 +98,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn" style="width: 100%;">Apply Filters</button>
+                    <button type="submit" class="btn btn-full">Apply Filters</button>
                 </form>
             </div>
         </aside>
@@ -79,7 +107,7 @@
             <div class="section-head">
                 <div>
                     <p class="eyebrow">Available Products</p>
-                    <h2 style="font-family: Georgia, 'Times New Roman', serif;">{{ page_obj.paginator.count }} items found</h2>
+                    <h2 class="section-title-serif">{{ page_obj.paginator.count }} items found</h2>
                 </div>
             </div>
             
@@ -91,7 +119,7 @@
                         {% if product.image %}
                             <img src="{{ product.image.url }}" alt="{{ product.name }}">
                         {% else %}
-                            <span style="color: #999;">No Image</span>
+                            <span class="image-fallback">No Image</span>
                         {% endif %}
                     </div>
                     <div class="product-info">
@@ -108,8 +136,8 @@
                         {% if product.rating %}
                             <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }} reviews)</div>
                         {% endif %}
-                        <div style="margin-top: 0.75rem;">
-                            <span class="btn btn-primary" style="width: 100%; text-align: center;">View product</span>
+                        <div class="product-cta-wrap">
+                            <span class="btn btn-primary product-cta-full">View product</span>
                         </div>
                     </div>
                 </a>
@@ -140,7 +168,7 @@
             {% endif %}
             {% else %}
             <div class="empty-state">
-                <strong style="display: block; margin-bottom: 0.35rem;">No matching products</strong>
+                <strong class="empty-state-title">No matching products</strong>
                 <span>Adjust your filters or add more items to this category from the admin area.</span>
             </div>
             {% endif %}

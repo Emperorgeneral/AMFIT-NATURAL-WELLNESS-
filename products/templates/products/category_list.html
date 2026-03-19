@@ -3,14 +3,36 @@
 {% block title %}Categories - AMFIT E-Commerce{% endblock %}
 
 {% block content %}
+<style>
+    .hero-eyebrow-soft { color: rgba(248, 244, 236, 0.75); }
+    .hero-title-light {
+        color: #f8f4ec;
+        margin-bottom: 0.5rem;
+    }
+    .image-fallback { color: #999; }
+    .category-desc {
+        font-size: 0.9rem;
+        color: var(--muted);
+    }
+    .category-count-wrap { margin-top: 1rem; }
+    .category-count {
+        font-size: 0.88rem;
+        color: var(--brand);
+        font-weight: 700;
+    }
+    .empty-state-title {
+        display: block;
+        margin-bottom: 0.35rem;
+    }
+</style>
 <div class="container">
     <div class="breadcrumb">
         <a href="{% url 'products:home' %}">Home</a> / Categories
     </div>
 
     <section class="hero-strip">
-        <p class="eyebrow" style="color: rgba(248, 244, 236, 0.75);">Catalog</p>
-        <h1 class="catalog-title" style="color: #f8f4ec; margin-bottom: 0.5rem;">Browse the store by category</h1>
+        <p class="eyebrow hero-eyebrow-soft">Catalog</p>
+        <h1 class="catalog-title hero-title-light">Browse the store by category</h1>
         <p>Use category collections to help customers navigate healthcare products with less friction and clearer intent.</p>
         <div class="metric-row">
             <span class="metric-pill">{{ categories|length }} active collections</span>
@@ -25,22 +47,22 @@
                 {% if category.image %}
                     <img src="{{ category.image.url }}" alt="{{ category.name }}">
                 {% else %}
-                    <span style="color: #999;">No Image</span>
+                    <span class="image-fallback">No Image</span>
                 {% endif %}
             </div>
             <div class="category-info">
                 <div class="category-name">{{ category.name }}</div>
                 {% if category.description %}
-                    <p style="font-size: 0.9rem; color: var(--muted);">{{ category.description|truncatewords:16 }}</p>
+                    <p class="category-desc">{{ category.description|truncatewords:16 }}</p>
                 {% endif %}
-                <div style="margin-top: 1rem;">
-                    <p style="font-size: 0.88rem; color: var(--brand); font-weight: 700;">{{ category.products.count }} products</p>
+                <div class="category-count-wrap">
+                    <p class="category-count">{{ category.products.count }} products</p>
                 </div>
             </div>
         </a>
         {% empty %}
         <div class="empty-state">
-            <strong style="display: block; margin-bottom: 0.35rem;">No categories available</strong>
+            <strong class="empty-state-title">No categories available</strong>
             <span>Use the admin dashboard or the sample seed command to populate the storefront.</span>
         </div>
         {% endfor %}

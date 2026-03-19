@@ -45,6 +45,71 @@
         box-shadow: 0 18px 30px rgba(0,0,0,0.14);
         width: 100%;
     }
+    .hero-eyebrow { color: rgba(255,245,232,0.78); }
+    .hero-title {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: clamp(1.55rem, 3.3vw, 2.9rem);
+        line-height: 1.12;
+        margin-bottom: 0.65rem;
+    }
+    .hero-summary {
+        color: rgba(248,244,236,0.82);
+        font-size: 1.05rem;
+        margin-bottom: 1.75rem;
+    }
+    .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-bottom: 2rem;
+    }
+    .hero-signup-btn {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.18);
+        color: #fff;
+    }
+    .hero-stat-title { display: block; }
+    .hero-stat-copy {
+        color: rgba(248,244,236,0.75);
+        font-size: 0.92rem;
+    }
+    .hero-why-eyebrow {
+        margin-bottom: 0.55rem;
+        color: #5f7069;
+    }
+    .hero-why-title {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.5rem;
+        margin-bottom: 0.6rem;
+    }
+    .hero-why-copy { color: #5f7069; }
+    .section-head-between {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: end;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    .section-title-ink { color: var(--ink); }
+    .section-copy-muted {
+        max-width: 44ch;
+        color: var(--muted);
+    }
+    .image-fallback { color: #999; }
+    .category-desc-sm {
+        font-size: 12px;
+        color: #666;
+    }
+    .empty-state-title {
+        display: block;
+        margin-bottom: 0.35rem;
+    }
+    .product-cta-wrap { margin-top: 0.75rem; }
+    .product-cta-full {
+        width: 100%;
+        text-align: center;
+    }
     @media (max-width: 980px) {
         .hero-stats {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -70,33 +135,33 @@
     <section class="hero-section featured-section">
         <div class="hero-grid">
             <div>
-                <p class="eyebrow" style="color: rgba(255,245,232,0.78);">Health Essentials, Curated Well</p>
-                <h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: clamp(1.55rem, 3.3vw, 2.9rem); line-height: 1.12; margin-bottom: 0.65rem;">A cleaner way to shop wellness and medical essentials.</h1>
-                <p style="color: rgba(248,244,236,0.82); font-size: 1.05rem; margin-bottom: 1.75rem;">AMFIT brings trusted healthcare categories, clearer pricing, and a storefront that feels reliable from first click to checkout.</p>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.85rem; margin-bottom: 2rem;">
+                <p class="eyebrow hero-eyebrow">Health Essentials, Curated Well</p>
+                <h1 class="hero-title">A cleaner way to shop wellness and medical essentials.</h1>
+                <p class="hero-summary">AMFIT brings trusted healthcare categories, clearer pricing, and a storefront that feels reliable from first click to checkout.</p>
+                <div class="hero-actions">
                     <a href="{% url 'products:category_list' %}" class="btn btn-accent">Browse Categories</a>
-                    <a href="{% url 'users:signup' %}" class="btn btn-secondary" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); color: #fff;">Create Account</a>
+                    <a href="{% url 'users:signup' %}" class="btn btn-secondary hero-signup-btn">Create Account</a>
                 </div>
                 <div class="hero-stats">
                     <div class="hero-stat">
-                        <strong style="display: block;">Curated</strong>
-                        <span style="color: rgba(248,244,236,0.75); font-size: 0.92rem;">Focused health categories</span>
+                        <strong class="hero-stat-title">Curated</strong>
+                        <span class="hero-stat-copy">Focused health categories</span>
                     </div>
                     <div class="hero-stat">
-                        <strong style="display: block;">Secure</strong>
-                        <span style="color: rgba(248,244,236,0.75); font-size: 0.92rem;">Account-first checkout flow</span>
+                        <strong class="hero-stat-title">Secure</strong>
+                        <span class="hero-stat-copy">Account-first checkout flow</span>
                     </div>
                     <div class="hero-stat">
-                        <strong style="display: block;">Clear</strong>
-                        <span style="color: rgba(248,244,236,0.75); font-size: 0.92rem;">Straightforward pricing</span>
+                        <strong class="hero-stat-title">Clear</strong>
+                        <span class="hero-stat-copy">Straightforward pricing</span>
                     </div>
                 </div>
             </div>
             <div class="hero-cards">
                 <div class="hero-card-light">
-                    <p class="eyebrow" style="margin-bottom: 0.55rem; color: #5f7069;">Why AMFIT</p>
-                    <h3 style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; margin-bottom: 0.6rem;">Built for trust, not clutter.</h3>
-                    <p style="color: #5f7069;">The storefront prioritizes clean hierarchy, a healthcare-appropriate palette, and obvious paths into account creation and shopping.</p>
+                    <p class="eyebrow hero-why-eyebrow">Why AMFIT</p>
+                    <h3 class="hero-why-title">Built for trust, not clutter.</h3>
+                    <p class="hero-why-copy">The storefront prioritizes clean hierarchy, a healthcare-appropriate palette, and obvious paths into account creation and shopping.</p>
                 </div>
 
             </div>
@@ -104,12 +169,12 @@
     </section>
 
     <section>
-        <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: end; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <div class="section-head-between">
             <div>
                 <p class="eyebrow">Browse</p>
-                <h2 style="color: var(--ink);">Shop by Category</h2>
+                <h2 class="section-title-ink">Shop by Category</h2>
             </div>
-            <p style="max-width: 44ch; color: var(--muted);">Organize products into medical, vitamins, fertility, and other health-driven collections so customers can move quickly.</p>
+            <p class="section-copy-muted">Organize products into medical, vitamins, fertility, and other health-driven collections so customers can move quickly.</p>
         </div>
         <div class="category-grid">
             {% for category in categories %}
@@ -118,19 +183,19 @@
                     {% if category.image %}
                         <img src="{{ category.image.url }}" alt="{{ category.name }}">
                     {% else %}
-                        <span style="color: #999;">No Image</span>
+                        <span class="image-fallback">No Image</span>
                     {% endif %}
                 </div>
                 <div class="category-info">
                     <div class="category-name">{{ category.name }}</div>
                     {% if category.description %}
-                        <p style="font-size: 12px; color: #666;">{{ category.description|truncatewords:10 }}</p>
+                        <p class="category-desc-sm">{{ category.description|truncatewords:10 }}</p>
                     {% endif %}
                 </div>
             </a>
             {% empty %}
             <div class="empty-state">
-                <strong style="display: block; margin-bottom: 0.35rem;">No categories yet</strong>
+                <strong class="empty-state-title">No categories yet</strong>
                 <span>Add product categories from the admin dashboard to populate this area.</span>
             </div>
             {% endfor %}
@@ -138,7 +203,7 @@
     </section>
 
     <section class="featured-section">
-        <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: end; flex-wrap: wrap;">
+        <div class="section-head-between">
             <div>
                 <p class="eyebrow">Inventory Spotlight</p>
                 <h2>Featured Products</h2>
@@ -152,7 +217,7 @@
                     {% if product.image %}
                         <img src="{{ product.image.url }}" alt="{{ product.name }}">
                     {% else %}
-                        <span style="color: #999;">No Image</span>
+                        <span class="image-fallback">No Image</span>
                     {% endif %}
                 </div>
                 <div class="product-info">
@@ -169,14 +234,14 @@
                     {% if product.rating %}
                         <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }} reviews)</div>
                     {% endif %}
-                    <div style="margin-top: 0.75rem;">
-                        <span class="btn btn-primary" style="width: 100%; text-align: center;">View Details</span>
+                    <div class="product-cta-wrap">
+                        <span class="btn btn-primary product-cta-full">View Details</span>
                     </div>
                 </div>
             </a>
             {% empty %}
             <div class="empty-state">
-                <strong style="display: block; margin-bottom: 0.35rem;">No featured products yet</strong>
+                <strong class="empty-state-title">No featured products yet</strong>
                 <span>Add products in the admin area and they will appear here automatically.</span>
             </div>
             {% endfor %}
