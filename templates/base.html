@@ -87,13 +87,29 @@
 
         .logo-mark {
             font-family: Georgia, 'Times New Roman', serif;
-            font-size: 1.22rem;
+            font-size: 1.32rem;
             font-weight: 700;
             letter-spacing: 0.03em;
             color: #0a4137;
             margin-left: 0.55rem;
-            line-height: 1.1;
-            white-space: nowrap;
+            display: inline-flex;
+            flex-direction: column;
+            line-height: 1;
+            gap: 0.2rem;
+        }
+
+        .logo-main {
+            line-height: 1;
+        }
+
+        .logo-submark {
+            font-family: 'Brush Script MT', 'Segoe Script', cursive;
+            font-size: 0.98rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: #2f665b;
+            text-transform: capitalize;
+            line-height: 1;
         }
 
         .nav-menu {
@@ -823,7 +839,7 @@
         <nav>
             <a href="{% url 'products:home' %}" class="logo" aria-label="AMFIT Home">
                 <img src="{% static 'android-chrome-192x192.png' %}" alt="amfit">
-                <span class="logo-mark">amfit natural wellness</span>
+                <span class="logo-mark"><span class="logo-main">amfit</span><span class="logo-submark">natural wellness</span></span>
             </a>
             <button class="hamburger" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
                 <span></span><span></span><span></span>
