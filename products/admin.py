@@ -118,13 +118,11 @@ class ProductAdmin(admin.ModelAdmin):
 
     def mark_active(self, request, queryset):
         queryset.update(status='active')
-    mark_active.short_description = "✅ Mark selected as Active"
+    mark_active.short_description = "Mark selected as Active"
 
     def mark_inactive(self, request, queryset):
         queryset.update(status='inactive')
-    mark_inactive.short_description = "❌ Mark selected as I
-        queryset.update(status='inactive')
-    mark_inactive.short_description = "Mark selected products as inactive"
+    mark_inactive.short_description = "Mark selected as Inactive"
 
 
 @admin.register(ProductReview)
