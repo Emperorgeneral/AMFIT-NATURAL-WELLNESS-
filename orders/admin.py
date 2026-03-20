@@ -81,17 +81,15 @@ class OrderAdmin(admin.ModelAdmin):
 
     def mark_processing(self, request, queryset):
         queryset.update(status='processing')
-    mark_processing.short_description = "📦 Mark as Processing"
+    mark_processing.short_description = "Mark as Processing"
 
     def mark_shipped(self, request, queryset):
         queryset.update(status='shipped')
-    mark_shipped.short_description = "🚚 Mark as Shipped"
+    mark_shipped.short_description = "Mark as Shipped"
 
     def mark_delivered(self, request, queryset):
         queryset.update(status='delivered')
-    mark_delivered.short_description = "✅ Mark as D
-        queryset.update(status='delivered')
-    mark_delivered.short_description = "Mark as delivered"
+    mark_delivered.short_description = "Mark as Delivered"
 
 
 @admin.register(OrderItem)
