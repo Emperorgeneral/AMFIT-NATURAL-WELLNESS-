@@ -181,10 +181,9 @@
             <a href="{% url 'products:category_detail' category.slug %}" class="category-card">
                 <div class="category-image">
                     {% if category.image %}
-                        <img src="{{ category.image.url }}" alt="{{ category.name }}">
-                    {% else %}
-                        <span class="image-fallback">No Image</span>
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}" onerror="this.style.display='none'; this.parentElement.querySelector('.image-fallback').style.display='inline-flex';">
                     {% endif %}
+                    <span class="image-fallback"{% if category.image %} style="display: none;"{% endif %}>No Image</span>
                 </div>
                 <div class="category-info">
                     <div class="category-name">{{ category.name }}</div>
