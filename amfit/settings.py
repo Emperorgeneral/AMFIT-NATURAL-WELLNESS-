@@ -5,6 +5,7 @@ Django settings for amfit project.
 import os
 from pathlib import Path
 from decouple import config, Csv
+from django.core.exceptions import ImproperlyConfigured
 try:
     import dj_database_url
 except ImportError:  # Local fallback when dependency is unavailable
@@ -14,7 +15,7 @@ except ImportError:  # Local fallback when dependency is unavailable
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-development-key-change-in-production')
+SECRET_KEY = config('SECRET_KEY', default='')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -22,6 +23,12 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # Railway production safety: never expose debug pages in hosted environment.
 if os.getenv('RAILWAY_ENVIRONMENT'):
     DEBUG = False
+
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-dev-only-change-before-deploy'
+    else:
+        raise ImproperlyConfigured('SECRET_KEY must be set when DEBUG is False.')
 
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
