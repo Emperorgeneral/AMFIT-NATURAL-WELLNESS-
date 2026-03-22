@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us - AMFIT E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="content-page">
+        <h1>Contact Us</h1>
+        
+        <p class="intro-text">
+            Have questions or feedback? We'd love to hear from you! Get in touch with our team through any of the following channels.
+        </p>
+
+        <div class="contact-grid">
+            <section class="contact-info">
+                <div class="info-card">
+                    <h3>📍 Physical Address</h3>
+                    <p>
+                        1 I.U. A/U0N RD<br>
+                        Uko<br>
+                        Nigeria
+                    </p>
+                </div>
+
+                <div class="info-card">
+                    <h3>📞 Phone</h3>
+                    <p>
+                        <a href="tel:+234-800-000-0000">+234-800-000-0000</a><br>
+                        <span class="hours">Mon - Fri: 9:00 AM - 6:00 PM</span>
+                    </p>
+                </div>
+
+                <div class="info-card">
+                    <h3>✉️ Email</h3>
+                    <p>
+                        <a href="mailto:support@amfit.com">support@amfit.com</a><br>
+                        <a href="mailto:info@amfit.com">info@amfit.com</a>
+                    </p>
+                </div>
+
+                <div class="info-card">
+                    <h3>⏰ Business Hours</h3>
+                    <p>
+                        Monday - Friday: 9:00 AM - 6:00 PM<br>
+                        Saturday: 10:00 AM - 4:00 PM<br>
+                        Sunday: Closed
+                    </p>
+                </div>
+            </section>
+
+            <section class="contact-form-section">
+                <h2>Send us a Message</h2>
+                <form class="contact-form" id="contact-form">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" name="name" required placeholder="Your name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required placeholder="your@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="+234-XXX-XXXX-XXXX">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">Subject *</label>
+                        <input type="text" id="subject" name="subject" required placeholder="How can we help?">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Message *</label>
+                        <textarea id="message" name="message" required rows="6" placeholder="Tell us more details..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-accent">Send Message</button>
+                </form>
+                <p class="form-note">We'll get back to you within 24 business hours.</p>
+            </section>
+        </div>
+
+        <section class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-items">
+                <div class="faq-item">
+                    <h3>How long does delivery take?</h3>
+                    <p>Most orders are delivered within 2-5 business days depending on your location within Nigeria.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Can I track my order?</h3>
+                    <p>Yes! Once your order is shipped, you'll receive a tracking number via email and SMS.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>What's your return policy?</h3>
+                    <p>We accept returns within 14 days of purchase for unopened, unused items in original packaging.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Do you ship internationally?</h3>
+                    <p>Currently, we deliver within Nigeria only. International shipping may be available soon.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+    .content-page {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .content-page h1 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 2.5rem;
+        color: var(--brand-deep);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .intro-text {
+        text-align: center;
+        color: var(--muted);
+        margin-bottom: 2.5rem;
+        font-size: 1.1rem;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .info-card {
+        background: var(--surface-solid);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-card);
+        margin-bottom: 1rem;
+    }
+
+    .info-card h3 {
+        color: var(--brand);
+        margin-bottom: 0.8rem;
+        font-size: 1.1rem;
+    }
+
+    .info-card p {
+        color: var(--ink);
+        line-height: 1.8;
+    }
+
+    .info-card a {
+        color: var(--brand);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .info-card a:hover {
+        color: var(--accent);
+    }
+
+    .hours {
+        font-size: 0.9rem;
+        color: var(--muted);
+        display: block;
+        margin-top: 0.5rem;
+    }
+
+    .contact-form-section {
+        background: var(--accent-soft);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+    }
+
+    .contact-form-section h2 {
+        font-family: Georgia, 'Times New Roman', serif;
+        color: #3d2817;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+    }
+
+    .contact-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        color: #3d2817;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        padding: 0.75rem;
+        border: 1px solid rgba(61, 40, 23, 0.2);
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--ink);
+        font-family: inherit;
+        font-size: 1rem;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #8b4d20;
+        background: white;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .contact-form .btn {
+        margin-top: 0.5rem;
+        padding: 1rem;
+        font-weight: 600;
+    }
+
+    .form-note {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #5a3a24;
+        text-align: center;
+    }
+
+    .faq-section {
+        margin-top: 3rem;
+    }
+
+    .faq-section h2 {
+        font-family: Georgia, 'Times New Roman', serif;
+        color: var(--brand);
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+    }
+
+    .faq-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .faq-item {
+        background: var(--surface-solid);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-card);
+    }
+
+    .faq-item h3 {
+        color: var(--brand);
+        margin-bottom: 0.8rem;
+        font-size: 1.05rem;
+    }
+
+    .faq-item p {
+        color: var(--ink);
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    @media (max-width: 768px) {
+        .content-page h1 {
+            font-size: 2rem;
+        }
+
+        .contact-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .faq-items {
+            grid-template-columns: 1fr;
+        }
+
+        .contact-form-section {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<script>
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            subject: document.getElementById('subject').value,
+            message: document.getElementById('message').value,
+        };
+        alert('Thank you for your message! We will get back to you soon at ' + formData.email);
+        document.getElementById('contact-form').reset();
+    });
+</script>
+{% endblock %}

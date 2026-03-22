@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout | AMFIT{% endblock %}
+
+{% block content %}
+<style>
+.co-head { display: flex; justify-content: space-between; gap: 1rem; align-items: end; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.co-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2rem, 4vw, 3rem); }
+.co-sub { color: var(--muted); max-width: 52ch; }
+.co-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr); gap: 1.5rem; align-items: start; }
+.co-form-pad { padding: 1.8rem; }
+.full-span { grid-column: 1 / -1; }
+.co-form-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1.25rem; }
+.co-summary-sticky { position: sticky; top: 2rem; }
+.co-items-grid { display: grid; gap: 0.8rem; margin-bottom: 1rem; }
+.co-item-row { display: flex; justify-content: space-between; gap: 0.8rem; color: var(--muted); }
+.co-item-val { color: var(--ink); }
+.co-totals-grid { display: grid; gap: 0.8rem; color: var(--muted); }
+.co-total-row { display: flex; justify-content: space-between; }
+.co-total-val { color: var(--ink); }
+.co-divider { height: 1px; background: var(--border); margin: 0.3rem 0; }
+.co-grand-row { display: flex; justify-content: space-between; font-size: 1.12rem; }
+.co-grand-val { color: var(--brand); }
+</style>
+<div class="container">
+    <div class="breadcrumb">
+        <a href="{% url 'products:home' %}">Home</a> /
+        <a href="{% url 'orders:cart_detail' %}">Cart</a> / Checkout
+    </div>
+
+    <section class="featured-section">
+        <p class="eyebrow">Checkout</p>
+        <div class="co-head">
+            <div>
+                <h1 class="co-title">Confirm delivery details</h1>
+                <p class="co-sub">This completes the pre-payment order flow. Flutterwave can plug into this step next.</p>
+            </div>
+        </div>
+
+        <div class="co-layout">
+            <form method="post" class="auth-card co-form-pad">
+                {% csrf_token %}
+                <div class="auth-form auth-grid">
+                    {% for field in form %}
+                    <div class="form-row{% if field.name == 'shipping_address' or field.name == 'notes' %} full-span{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {{ field.errors }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="co-form-actions">
+                    <button type="submit" class="btn btn-accent">Place order</button>
+                    <a href="{% url 'orders:cart_detail' %}" class="btn btn-secondary">Back to cart</a>
+                </div>
+            </form>
+
+            <aside class="filters co-summary-sticky">
+                <p class="eyebrow">Order Summary</p>
+                <div class="co-items-grid">
+                    {% for item in cart_items %}
+                    <div class="co-item-row">
+                        <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                        <strong class="co-item-val">₦{{ item.total }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="co-totals-grid">
+                    <div class="co-total-row"><span>Subtotal</span><strong class="co-total-val">₦{{ subtotal }}</strong></div>
+                    <div class="co-total-row"><span>Shipping</span><strong class="co-total-val">₦{{ shipping }}</strong></div>
+                    <div class="co-total-row"><span>Tax</span><strong class="co-total-val">₦{{ tax }}</strong></div>
+                    <div class="co-divider"></div>
+                    <div class="co-grand-row"><span>Total</span><strong class="co-grand-val">₦{{ total }}</strong></div>
+                </div>
+            </aside>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -11,8 +11,4 @@ urlpatterns = [
          views.subcategory_detail, name='subcategory_detail'),
     path('product/<slug:slug>/', views.product_detail, name='product_detail'),
     path('search/', views.search_products, name='search_products'),
-    path('about/', views.about_us, name='about_us'),
-    path('contact/', views.contact, name='contact'),
-    path('privacy/', views.privacy_policy, name='privacy_policy'),
-    path('terms/', views.terms_conditions, name='terms_conditions'),
 ]

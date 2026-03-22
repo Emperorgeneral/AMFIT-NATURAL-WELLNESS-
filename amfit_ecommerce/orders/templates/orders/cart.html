@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Cart | AMFIT{% endblock %}
+
+{% block content %}
+<style>
+.cart-head { display: flex; justify-content: space-between; gap: 1rem; align-items: end; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.cart-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2rem, 4vw, 3rem); }
+.cart-sub { color: var(--muted); max-width: 52ch; }
+.cart-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.8fr); gap: 1.5rem; align-items: start; }
+.cart-list { display: grid; gap: 1rem; }
+.cart-item { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 24px; background: #fff; }
+.cart-item-img { height: 130px; border-radius: 18px; }
+.image-fallback { color: var(--muted); }
+.cart-item-head { display: flex; justify-content: space-between; gap: 1rem; align-items: start; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.cart-item-name { font-family: Georgia, 'Times New Roman', serif; margin-bottom: 0.2rem; }
+.cart-item-meta { color: var(--muted); font-size: 0.92rem; }
+.cart-item-price { font-size: 1.1rem; color: var(--brand); }
+.cart-item-actions { display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.cart-qty-form { display: flex; align-items: center; gap: 0.8rem; }
+.cart-qty-label { font-weight: 700; }
+.cart-qty-input { width: 84px; padding: 0.7rem 0.9rem; border-radius: 14px; border: 1px solid var(--border); }
+.summary-sticky { position: sticky; top: 2rem; }
+.summary-title { font-family: Georgia, 'Times New Roman', serif; font-size: 1.5rem; margin-bottom: 1rem; }
+.summary-grid { display: grid; gap: 0.8rem; color: var(--muted); }
+.summary-row { display: flex; justify-content: space-between; }
+.summary-val { color: var(--ink); }
+.summary-divider { height: 1px; background: var(--border); margin: 0.3rem 0; }
+.summary-total-row { display: flex; justify-content: space-between; font-size: 1.12rem; }
+.summary-total-val { color: var(--brand); }
+.btn-checkout { width: 100%; margin-top: 1.4rem; text-align: center; }
+.cart-shipping-note { font-size: 0.88rem; color: var(--muted); margin-top: 0.75rem; }
+.empty-state-title { display: block; margin-bottom: 0.35rem; }
+</style>
+<div class="container">
+    <div class="breadcrumb">
+        <a href="{% url 'products:home' %}">Home</a> / Cart
+    </div>
+
+    <section class="featured-section">
+        <p class="eyebrow">Shopping Cart</p>
+        <div class="cart-head">
+            <div>
+                <h1 class="cart-title">Review your selected items</h1>
+                <p class="cart-sub">Adjust quantities, confirm totals, and continue to checkout when you are ready.</p>
+            </div>
+            <a href="{% url 'products:category_list' %}" class="btn btn-secondary">Continue shopping</a>
+        </div>
+
+        {% if cart_items %}
+        <div class="cart-layout">
+            <div class="cart-list">
+                {% for item in cart_items %}
+                <article class="cart-item">
+                    <div class="product-image cart-item-img">
+                        {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                        {% else %}
+                            <span class="image-fallback">No Image</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="cart-item-head">
+                            <div>
+                                <h3 class="cart-item-name">{{ item.product.name }}</h3>
+                                <p class="cart-item-meta">{{ item.product.category.name }} / {{ item.product.subcategory.name }}</p>
+                            </div>
+                            <strong class="cart-item-price">₦{{ item.total }}</strong>
+                        </div>
+
+                        <div class="cart-item-actions">
+                            <form method="post" action="{% url 'orders:update_cart_item' item.id %}" class="cart-qty-form">
+                                {% csrf_token %}
+                                <label for="quantity-{{ item.id }}" class="cart-qty-label">Qty</label>
+                                <input id="quantity-{{ item.id }}" type="number" min="1" name="quantity" value="{{ item.quantity }}" class="cart-qty-input">
+                                <button type="submit" class="btn btn-secondary">Update</button>
+                            </form>
+
+                            <form method="post" action="{% url 'orders:remove_cart_item' item.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+
+            <aside class="filters summary-sticky">
+                <p class="eyebrow">Summary</p>
+                <h3 class="summary-title">Order overview</h3>
+                <div class="summary-grid">
+                    <div class="summary-row"><span>Subtotal</span><strong class="summary-val">₦{{ subtotal }}</strong></div>
+                    <div class="summary-row"><span>Shipping</span><strong class="summary-val">₦{{ shipping }}</strong></div>
+                    <div class="summary-row"><span>Estimated tax</span><strong class="summary-val">₦{{ tax }}</strong></div>
+                    <div class="summary-divider"></div>
+                    <div class="summary-total-row"><span>Total</span><strong class="summary-total-val">₦{{ total }}</strong></div>
+                </div>
+                <a href="{% url 'orders:checkout' %}" class="btn btn-accent btn-checkout">Proceed to checkout</a>
+                <p class="cart-shipping-note">Free shipping applies automatically on orders above ₦25,000.</p>
+            </aside>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <strong class="empty-state-title">Your cart is empty</strong>
+            <span>Add some sample products from the catalog to start the checkout flow.</span>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

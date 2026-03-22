@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - AMFIT E-Commerce{% endblock %}
+
+{% block content %}
+<style>
+    .detail-shell-top { margin-top: 2rem; }
+    .detail-image-cover {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .visual-fallback {
+        text-align: center;
+        padding: 2rem;
+        color: var(--muted);
+    }
+    .visual-fallback-title {
+        display: block;
+        margin-bottom: 0.4rem;
+    }
+    .detail-title {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: clamp(2rem, 4vw, 3.2rem);
+        line-height: 1.05;
+        margin-bottom: 0.65rem;
+    }
+    .detail-meta {
+        margin-bottom: 1.5rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+    }
+    .rating-wrap { margin-bottom: 1.5rem; }
+    .rating-line {
+        color: #b06d16;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .price-wrap { margin-bottom: 1.5rem; }
+    .price-sale {
+        font-size: 2rem;
+        color: #b4572a;
+        margin-bottom: 0.4rem;
+        font-weight: 700;
+    }
+    .price-meta {
+        font-size: 1rem;
+        color: var(--muted);
+    }
+    .price-strike { text-decoration: line-through; }
+    .price-badge {
+        background: var(--accent-soft);
+        color: #8b4d20;
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        margin-left: 1rem;
+        font-weight: 700;
+    }
+    .price-regular {
+        font-size: 2rem;
+        color: var(--brand);
+        font-weight: 700;
+    }
+    .stock-wrap { margin-bottom: 1.5rem; }
+    .desc-wrap { margin-bottom: 2rem; }
+    .desc-title {
+        margin-bottom: 0.5rem;
+        font-family: Georgia, 'Times New Roman', serif;
+    }
+    .desc-copy {
+        color: var(--muted);
+        line-height: 1.8;
+    }
+    .actions-wrap {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .add-cart-form {
+        flex: 1;
+        display: flex;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+    .qty-input {
+        width: 92px;
+        padding: 0.9rem 1rem;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+    }
+    .btn-fill { flex: 1; }
+    .btn-pad { padding: 1rem; }
+    .btn-disabled {
+        background: #95a5a6;
+        cursor: not-allowed;
+    }
+    .meta-table {
+        width: 100%;
+        margin-bottom: 2rem;
+        border-collapse: collapse;
+    }
+    .meta-row-border { border-bottom: 1px solid var(--border); }
+    .meta-label {
+        padding: 0.75rem 0.2rem;
+        color: var(--muted);
+    }
+    .meta-value { padding: 0.5rem; }
+    .featured-top { margin-top: 4rem; }
+    .image-fallback { color: #999; }
+    .product-cta-wrap { margin-top: 0.75rem; }
+    .product-cta-full {
+        width: 100%;
+        text-align: center;
+    }
+    .review-head {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    .review-date {
+        color: var(--muted);
+        font-size: 0.9rem;
+    }
+    .review-score {
+        color: #b06d16;
+        margin-bottom: 0.5rem;
+    }
+    .review-comment {
+        color: var(--muted);
+        line-height: 1.6;
+    }
+    .empty-state-title {
+        display: block;
+        margin-bottom: 0.35rem;
+    }
+</style>
+<div class="container">
+    <div class="breadcrumb">
+        <a href="{% url 'products:home' %}">Home</a> / 
+        <a href="{% url 'products:category_detail' product.category.slug %}">{{ product.category.name }}</a> / 
+        <a href="{% url 'products:subcategory_detail' product.category.slug product.subcategory.slug %}">{{ product.subcategory.name }}</a> / 
+        {{ product.name }}
+    </div>
+
+    <div class="detail-shell detail-shell-top">
+        <div>
+            <div class="detail-image">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="detail-image-cover">
+                {% else %}
+                    <div class="visual-fallback">
+                        <strong class="visual-fallback-title">Visual pending</strong>
+                        <span>Add a professional product image from the admin dashboard.</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div>
+            <div class="detail-card">
+                <p class="eyebrow">Product Detail</p>
+                <h1 class="detail-title">{{ product.name }}</h1>
+                
+                <div class="detail-meta">
+                    <p>Category: <strong>{{ product.category.name }} > {{ product.subcategory.name }}</strong></p>
+                    <p>SKU: <strong>{{ product.sku }}</strong></p>
+                </div>
+
+                {% if avg_rating %}
+                <div class="rating-wrap">
+                    <div class="rating-line">
+                        ⭐ {{ avg_rating|floatformat:1 }} / 5.0 ({{ reviews.count }} reviews)
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="price-wrap">
+                    {% if product.is_on_sale %}
+                        <div class="price-sale">
+                            ₦{{ product.discounted_price }}
+                        </div>
+                        <div class="price-meta">
+                            <span class="price-strike">₦{{ product.price }}</span>
+                            <span class="price-badge">
+                                Save {{ product.discount_percentage }}%
+                            </span>
+                        </div>
+                    {% else %}
+                        <div class="price-regular">
+                            ₦{{ product.price }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="stock-wrap">
+                    {% if product.stock_quantity > 10 %}
+                        <span class="status-chip in-stock">
+                            ✓ In Stock ({{ product.stock_quantity }} available)
+                        </span>
+                    {% elif product.stock_quantity > 0 %}
+                        <span class="status-chip low-stock">
+                            ⚠ Limited Stock ({{ product.stock_quantity }} available)
+                        </span>
+                    {% else %}
+                        <span class="status-chip out-stock">
+                            ✗ Out of Stock
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="desc-wrap">
+                    <h3 class="desc-title">Description</h3>
+                    <p class="desc-copy">{{ product.description }}</p>
+                </div>
+
+                <div class="actions-wrap">
+                    {% if product.stock_quantity > 0 %}
+                        <form method="post" action="{% url 'orders:add_to_cart' product.slug %}" class="add-cart-form">
+                            {% csrf_token %}
+                            <label for="product-qty" class="visually-hidden">Quantity</label>
+                            <input id="product-qty" type="number" name="quantity" value="1" min="1" class="qty-input">
+                            <button type="submit" class="btn btn-accent btn-fill btn-pad">Add to Cart</button>
+                        </form>
+                        <a href="{% url 'orders:cart_detail' %}" class="btn btn-secondary btn-pad">View Cart</a>
+                    {% else %}
+                        <button class="btn btn-fill btn-pad btn-disabled" disabled>Out of Stock</button>
+                    {% endif %}
+                </div>
+
+                <table class="meta-table">
+                    <tr class="meta-row-border">
+                        <td class="meta-label"><strong>Product Status</strong></td>
+                        <td class="meta-value">{{ product.get_status_display }}</td>
+                    </tr>
+                    <tr class="meta-row-border">
+                        <td class="meta-label"><strong>Added</strong></td>
+                        <td class="meta-value">{{ product.created_at|date:"F d, Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label"><strong>Checkout</strong></td>
+                        <td class="meta-value">Login required before payment</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if related_products %}
+    <section class="featured-section featured-top">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">Related Products</p>
+                <h2>Customers also browse</h2>
+            </div>
+        </div>
+        <div class="product-grid">
+            {% for related in related_products %}
+            <a href="{% url 'products:product_detail' related.slug %}" class="product-card">
+                <div class="product-image">
+                    {% if related.image %}
+                        <img src="{{ related.image.url }}" alt="{{ related.name }}">
+                    {% else %}
+                        <span class="image-fallback">No Image</span>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-name">{{ related.name|truncatewords:3 }}</div>
+                    {% if related.is_on_sale %}
+                        <div class="product-price">
+                            ₦{{ related.discounted_price }}
+                            <span class="original-price">₦{{ related.price }}</span>
+                            <span class="discount-badge">-{{ related.discount_percentage }}%</span>
+                        </div>
+                    {% else %}
+                        <div class="product-price">₦{{ related.price }}</div>
+                    {% endif %}
+                    <div class="product-cta-wrap">
+                        <span class="btn btn-primary product-cta-full">View product</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="featured-section featured-top">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">Social Proof</p>
+                <h2>Customer Reviews ({{ reviews.count }})</h2>
+            </div>
+        </div>
+        
+        {% if reviews %}
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-head">
+                    <strong>{{ review.user.get_full_name|default:review.user.username }}</strong>
+                    <span class="review-date">{{ review.created_at|date:"F d, Y" }}</span>
+                </div>
+                <div class="review-score">
+                    {{ review.rating }} / 5 stars
+                </div>
+                {% if review.comment %}
+                    <p class="review-comment">{{ review.comment }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <strong class="empty-state-title">No reviews yet</strong>
+                <span>Seeded customer reviews or user-generated reviews will appear here.</span>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

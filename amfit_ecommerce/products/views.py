@@ -185,23 +185,3 @@ def search_products(request):
         'sort_by': sort_by,
     }
     return render(request, 'products/search_results.html', context)
-
-
-def about_us(request):
-    """About Us page"""
-    return render(request, 'pages/about_us.html')
-
-
-def contact(request):
-    """Contact Us page"""
-    return render(request, 'pages/contact.html')
-
-
-def privacy_policy(request):
-    """Privacy Policy page"""
-    return render(request, 'pages/privacy_policy.html')
-
-
-def terms_conditions(request):
-    """Terms and Conditions page"""
-    return render(request, 'pages/terms_conditions.html')

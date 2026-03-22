@@ -1,0 +1,7 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "python manage.py migrate && python manage.py ensure_superuser && python manage.py collectstatic --noinput && gunicorn amfit.wsgi:application --log-file -"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
