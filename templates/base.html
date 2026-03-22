@@ -348,12 +348,47 @@
             color: rgba(255, 255, 255, 0.88);
             padding: 1.6rem 1.4rem;
             border-radius: 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 4rem;
             box-shadow: var(--shadow-soft);
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h4 {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.05rem;
+            margin-bottom: 0.85rem;
+            font-weight: 700;
+        }
+
+        .footer-section p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 0.6rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.25s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent);
         }
 
         .filters {
@@ -736,9 +771,8 @@
         }
 
         @media (max-width: 960px) {
-            footer {
-                flex-direction: column;
-                text-align: center;
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .auth-grid {
@@ -831,6 +865,24 @@
                 padding: 1.5rem 1rem;
                 border-radius: 20px;
             }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            footer {
+                padding: 1.2rem 0.8rem;
+                margin: 2rem auto 0.8rem;
+            }
+
+            .footer-section h4 {
+                font-size: 1rem;
+            }
+
+            .footer-section p,
+            .footer-section a {
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -848,6 +900,8 @@
                 <div class="nav-menu">
                     <a href="{% url 'products:home' %}">Home</a>
                     <a href="{% url 'products:category_list' %}">Categories</a>
+                    <a href="{% url 'products:about_us' %}">About</a>
+                    <a href="{% url 'products:contact' %}">Contact</a>
                 </div>
                 <form method="GET" action="{% url 'products:search_products' %}" class="search-box">
                     <input type="text" name="q" placeholder="Search products..." required>
@@ -885,8 +939,37 @@
     </main>
 
     <footer>
-        <p>&copy; {% now "Y" %} AMFIT E-Commerce. All rights reserved.</p>
-        <p>Professional healthcare retail for modern customers.</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About AMFIT</h4>
+                <p>&copy; {% now "Y" %} AMFIT E-Commerce. All rights reserved.</p>
+                <p>Professional healthcare retail for modern customers.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{% url 'products:home' %}">Home</a></li>
+                    <li><a href="{% url 'products:category_list' %}">Categories</a></li>
+                    <li><a href="{% url 'products:about_us' %}">About Us</a></li>
+                    <li><a href="{% url 'products:contact' %}">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="{% url 'products:privacy_policy' %}">Privacy Policy</a></li>
+                    <li><a href="{% url 'products:terms_conditions' %}">Terms &amp; Conditions</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Get in Touch</h4>
+                <p>
+                    1 I.U. A/U0N RD<br>
+                    Uko, Nigeria<br>
+                    <a href="mailto:support@amfit.com">support@amfit.com</a>
+                </p>
+            </div>
+        </div>
     </footer>
     <script>
         const toggle = document.getElementById('nav-toggle');

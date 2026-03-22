@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us - AMFIT E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="content-page">
+        <h1>About AMFIT</h1>
+        
+        <section class="about-intro">
+            <p>
+                Welcome to <strong>AMFIT</strong>, your trusted destination for premium natural wellness products and healthcare solutions. 
+                We are committed to bringing high-quality, authentic health and wellness products right to your doorstep.
+            </p>
+        </section>
+
+        <section class="about-mission">
+            <h2>Our Mission</h2>
+            <p>
+                At AMFIT, our mission is to empower individuals to take control of their health and wellness through access to 
+                premium natural products, expert guidance, and professional healthcare retail services. We believe that everyone 
+                deserves access to quality wellness solutions that are safe, effective, and affordable.
+            </p>
+        </section>
+
+        <section class="about-values">
+            <h2>Our Core Values</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <h3>Quality Assurance</h3>
+                    <p>We carefully curate every product to ensure it meets our strict quality standards and sourcing criteria.</p>
+                </div>
+                <div class="value-card">
+                    <h3>Customer-Centric</h3>
+                    <p>Your satisfaction is our priority. We provide exceptional customer service and support at every step.</p>
+                </div>
+                <div class="value-card">
+                    <h3>Transparency</h3>
+                    <p>We believe in honest communication about our products, pricing, and services. No hidden agendas.</p>
+                </div>
+                <div class="value-card">
+                    <h3>Innovation</h3>
+                    <p>We continuously seek new wellness solutions and ways to improve your shopping experience.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-expertise">
+            <h2>Why Choose AMFIT?</h2>
+            <ul class="features-list">
+                <li><strong>Curated Selection:</strong> Hand-picked products from trusted, verified suppliers</li>
+                <li><strong>Competitive Pricing:</strong> Fair prices without compromising on quality</li>
+                <li><strong>Fast Delivery:</strong> Reliable and prompt delivery to your location</li>
+                <li><strong>Expert Support:</strong> Our team is available to answer your wellness questions</li>
+                <li><strong>Authentic Products:</strong> 100% genuine items with authenticity certificates where applicable</li>
+                <li><strong>Secure Transactions:</strong> Your data and payments are protected with industry-standard security</li>
+            </ul>
+        </section>
+
+        <section class="about-commitment">
+            <h2>Our Commitment</h2>
+            <p>
+                We are committed to maintaining the highest standards of product quality, customer service, and business ethics. 
+                Every product in our catalog has been carefully selected to ensure it delivers real value to your health and wellness journey.
+            </p>
+            <p>
+                Whether you're looking for vitamins, supplements, skincare products, or other wellness items, AMFIT is your 
+                partner in achieving a healthier, more balanced lifestyle.
+            </p>
+        </section>
+    </div>
+</div>
+
+<style>
+    .content-page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .content-page h1 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 2.5rem;
+        color: var(--brand-deep);
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .content-page h2 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.8rem;
+        color: var(--brand);
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .about-intro {
+        background: var(--accent-soft);
+        padding: 2rem;
+        border-radius: var(--radius-md);
+        margin-bottom: 2rem;
+        color: #3d2817;
+    }
+
+    .about-intro p {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+
+    .about-mission, .about-values, .about-expertise, .about-commitment {
+        margin-bottom: 2.5rem;
+    }
+
+    .about-mission p, .about-expertise p, .about-commitment p {
+        line-height: 1.8;
+        color: var(--ink);
+        font-size: 1.05rem;
+    }
+
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .value-card {
+        background: var(--surface-solid);
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-card);
+    }
+
+    .value-card h3 {
+        color: var(--brand);
+        margin-bottom: 0.8rem;
+        font-weight: 700;
+    }
+
+    .value-card p {
+        color: var(--muted);
+        line-height: 1.6;
+    }
+
+    .features-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .features-list li {
+        padding: 0.8rem 0;
+        padding-left: 2rem;
+        position: relative;
+        color: var(--ink);
+        line-height: 1.6;
+    }
+
+    .features-list li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: var(--brand);
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .about-commitment p:first-of-type {
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .content-page h1 {
+            font-size: 2rem;
+        }
+
+        .content-page h2 {
+            font-size: 1.5rem;
+        }
+
+        .values-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .about-intro {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
