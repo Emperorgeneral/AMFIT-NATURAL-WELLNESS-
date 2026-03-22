@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from decouple import config, Csv
 from django.core.exceptions import ImproperlyConfigured
+from django.core.management.utils import get_random_secret_key
 try:
     import dj_database_url
 except ImportError:  # Local fallback when dependency is unavailable
@@ -27,6 +28,10 @@ if os.getenv('RAILWAY_ENVIRONMENT'):
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = 'django-insecure-dev-only-change-before-deploy'
+    elif os.getenv('RAILWAY_ENVIRONMENT'):
+        # Keep the app booting on Railway even if env vars are misconfigured.
+        # Sessions may reset across deploys until SECRET_KEY is configured.
+        SECRET_KEY = get_random_secret_key()
     else:
         raise ImproperlyConfigured('SECRET_KEY must be set when DEBUG is False.')
 
