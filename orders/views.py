@@ -154,14 +154,28 @@ def _paystack_initialize(order, user, callback_url):
         },
     }
 
+    # Log payload details for debugging 1010 error
+    logger.info(
+        'Paystack initialize payload: email=%s (type=%s), amount=%s (type=%s), reference=%s (type=%s), order_id=%s',
+        email,
+        type(email).__name__,
+        amount_kobo,
+        type(amount_kobo).__name__,
+        reference,
+        type(reference).__name__,
+        order.id,
+    )
+
     return _paystack_request('/transaction/initialize', method='POST', payload=payload)
 
 
 def _paystack_request(path, method='GET', payload=None):
     secret_key = (settings.PAYSTACK_SECRET_KEY or '').strip()
     if not secret_key:
+        logger.error('PAYSTACK_SECRET_KEY is empty or not set')
         return {'ok': False, 'message': 'Payment gateway secret key is missing.'}
     if not (secret_key.startswith('sk_test_') or secret_key.startswith('sk_live_')):
+        logger.error('PAYSTACK_SECRET_KEY has invalid format: %s', secret_key[:10] + '...')
         return {'ok': False, 'message': 'Payment gateway secret key format is invalid.'}
 
     url = f'https://api.paystack.co{path}'
@@ -171,19 +185,31 @@ def _paystack_request(path, method='GET', payload=None):
     }
 
     if not headers.get('Authorization', '').startswith('Bearer '):
+        logger.error('Authorization header is invalid')
         return {'ok': False, 'message': 'Payment request authorization header is invalid.'}
     if headers.get('Content-Type') != 'application/json':
+        logger.error('Content-Type header is invalid: %s', headers.get('Content-Type'))
         return {'ok': False, 'message': 'Payment request content-type header is invalid.'}
 
     body = None
     if payload is not None:
         body = json.dumps(payload).encode('utf-8')
+        
+        # Log full request details for debugging
+        logger.info(
+            'Paystack API request: method=%s, path=%s, url=%s, payload_json=%s',
+            method,
+            path,
+            url,
+            json.dumps(payload),
+        )
 
     request = Request(url, data=body, headers=headers, method=method)
 
     try:
         with urlopen(request, timeout=25) as response:
             data = json.loads(response.read().decode('utf-8'))
+            logger.info('Paystack API success response: %s', json.dumps(data, default=str))
             return {'ok': True, 'data': data}
     except HTTPError as exc:
         raw = exc.read().decode('utf-8', errors='ignore') if hasattr(exc, 'read') else ''
@@ -201,6 +227,8 @@ def _paystack_request(path, method='GET', payload=None):
             'method': method,
             'path': path,
             'url': url,
+            'request_headers': dict(headers),
+            'request_payload': payload,
             'response_headers': response_headers,
             'response_body': raw,
             'parsed_response': parsed,
@@ -212,6 +240,8 @@ def _paystack_request(path, method='GET', payload=None):
             'method': method,
             'path': path,
             'url': url,
+            'request_headers': dict(headers),
+            'request_payload': payload,
             'error': str(exc),
         }
         logger.error('Paystack API network error details: %s', json.dumps(details, default=str))
