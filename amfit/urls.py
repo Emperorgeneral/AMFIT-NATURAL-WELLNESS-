@@ -40,9 +40,11 @@ urlpatterns = [
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     path(settings.ADMIN_URL, amfit_admin_site.urls),
     path('account/', include('users.urls')),
+    path('account/', include('allauth.urls')),
     path('', include('orders.urls')),
     path('', include('products.urls')),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+

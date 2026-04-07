@@ -2,10 +2,11 @@
 URL configuration for amfit project.
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
+from django.views.static import serve
 from amfit.admin_site import amfit_admin_site
 
 # Register all models with custom admin site
@@ -36,12 +37,14 @@ urlpatterns = [
         'favicon.ico',
         RedirectView.as_view(url=f"{settings.STATIC_URL}favicon.ico", permanent=True),
     ),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     path(settings.ADMIN_URL, amfit_admin_site.urls),
     path('account/', include('users.urls')),
+    path('account/', include('allauth.urls')),
     path('', include('orders.urls')),
     path('', include('products.urls')),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
