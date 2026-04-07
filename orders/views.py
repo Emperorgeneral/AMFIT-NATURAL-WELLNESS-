@@ -43,6 +43,14 @@ def _build_order_number():
             return candidate
 
 
+def _build_paystack_reference(order):
+    while True:
+        timestamp = timezone.now().strftime('%y%m%d%H%M%S%f')
+        candidate = f"AMF-{order.id}-{timestamp}-{randint(1000, 9999)}"
+        if not Order.objects.filter(paystack_reference=candidate).exists():
+            return candidate
+
+
 def _get_cart_item_unit_price(item):
     try:
         if item.product.is_on_sale and item.product.discounted_price is not None:
@@ -63,14 +71,16 @@ def _get_cart_item_total(item):
 def _paystack_initialize(order, user, callback_url):
     email = user.email or f'{user.username}@example.com'
     amount_kobo = int((order.total * Decimal('100')).quantize(Decimal('1')))
+    reference = order.paystack_reference or order.order_number
 
     payload = {
         'email': email,
         'amount': amount_kobo,
-        'reference': order.order_number,
+        'reference': reference,
         'callback_url': callback_url,
         'metadata': {
             'order_number': order.order_number,
+            'paystack_reference': reference,
             'user_id': user.id,
         },
     }
@@ -283,17 +293,21 @@ def paystack_initialize(request, order_number):
 
     callback_url = request.build_absolute_uri(reverse('orders:paystack_callback'))
 
+    if not order.paystack_reference:
+        order.paystack_reference = _build_paystack_reference(order)
+        order.save(update_fields=['paystack_reference', 'updated_at'])
+
     result = _paystack_initialize(order, request.user, callback_url)
     if not result['ok']:
         message = result['message']
         if _is_reference_issue(message):
-            old_reference = order.order_number
-            order.order_number = _build_order_number()
-            order.save(update_fields=['order_number', 'updated_at'])
+            old_reference = order.paystack_reference
+            order.paystack_reference = _build_paystack_reference(order)
+            order.save(update_fields=['paystack_reference', 'updated_at'])
             logger.warning(
                 'Retrying Paystack initialize after HTTP reference issue. old=%s new=%s user=%s message=%s',
                 old_reference,
-                order.order_number,
+                order.paystack_reference,
                 request.user.id,
                 message,
             )
@@ -301,7 +315,7 @@ def paystack_initialize(request, order_number):
             if not retry['ok']:
                 logger.error(
                     'Paystack initialize retry failed for order %s (user=%s): %s',
-                    order.order_number,
+                    order.paystack_reference,
                     request.user.id,
                     retry['message'],
                 )
@@ -311,7 +325,7 @@ def paystack_initialize(request, order_number):
         else:
             logger.error(
                 'Paystack initialize failed for order %s (user=%s): %s',
-                order.order_number,
+                order.paystack_reference,
                 request.user.id,
                 message,
             )
@@ -323,20 +337,20 @@ def paystack_initialize(request, order_number):
         message = response_data.get('message', 'Unable to initialize payment.')
         # Paystack can reject a reused reference (often surfaced as 1010/duplicate).
         if _is_reference_issue(message):
-            old_reference = order.order_number
-            order.order_number = _build_order_number()
-            order.save(update_fields=['order_number', 'updated_at'])
+            old_reference = order.paystack_reference
+            order.paystack_reference = _build_paystack_reference(order)
+            order.save(update_fields=['paystack_reference', 'updated_at'])
             logger.warning(
                 'Retrying Paystack initialize after reference issue. old=%s new=%s user=%s',
                 old_reference,
-                order.order_number,
+                order.paystack_reference,
                 request.user.id,
             )
             retry = _paystack_initialize(order, request.user, callback_url)
             if not retry['ok']:
                 logger.error(
                     'Paystack initialize retry failed for order %s (user=%s): %s',
-                    order.order_number,
+                    order.paystack_reference,
                     request.user.id,
                     retry['message'],
                 )
@@ -346,7 +360,7 @@ def paystack_initialize(request, order_number):
             if not response_data.get('status'):
                 logger.error(
                     'Paystack initialize retry returned non-success for order %s (user=%s): %s',
-                    order.order_number,
+                    order.paystack_reference,
                     request.user.id,
                     response_data,
                 )
@@ -355,7 +369,7 @@ def paystack_initialize(request, order_number):
         else:
             logger.error(
                 'Paystack initialize returned non-success for order %s (user=%s): %s',
-                order.order_number,
+                order.paystack_reference,
                 request.user.id,
                 response_data,
             )
@@ -366,7 +380,7 @@ def paystack_initialize(request, order_number):
     if not auth_url:
         logger.error(
             'Paystack initialize missing authorization_url for order %s (user=%s): %s',
-            order.order_number,
+            order.paystack_reference,
             request.user.id,
             response_data,
         )
@@ -381,7 +395,9 @@ def paystack_callback(request):
     if not reference:
         return HttpResponseBadRequest('Missing payment reference.')
 
-    order = get_object_or_404(Order, order_number=reference)
+    order = Order.objects.filter(paystack_reference=reference).first()
+    if order is None:
+        order = get_object_or_404(Order, order_number=reference)
     result = _paystack_request(f'/transaction/verify/{reference}')
 
     if not result['ok']:
@@ -430,7 +446,9 @@ def paystack_webhook(request):
         reference = data.get('reference')
         if reference:
             try:
-                order = Order.objects.get(order_number=reference)
+                order = Order.objects.filter(paystack_reference=reference).first()
+                if order is None:
+                    order = Order.objects.get(order_number=reference)
                 order.payment_status = 'completed'
                 if order.status == 'pending':
                     order.status = 'processing'
