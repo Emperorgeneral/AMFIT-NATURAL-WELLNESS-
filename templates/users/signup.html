@@ -13,7 +13,7 @@
         </div>
 
         <a href="{% provider_login_url 'google' process='login' %}" class="btn btn-outline auth-submit" style="display:block; text-align:center; margin-bottom:0.75rem;">Sign up with Google</a>
-        <div style="text-align:center; margin:0.25rem 0 0.9rem; color:#6b7280; font-size:0.9rem;">or create an account with email and password</div>
+        <div style="text-align:center; margin:0.25rem 0 0.9rem; color:#6b7280; font-size:0.9rem;">or create an account with email/password (Google is optional)</div>
 
         <form method="post" class="auth-form auth-grid">
             {% csrf_token %}
@@ -37,3 +37,4 @@
     </div>
 </section>
 {% endblock %}
+
