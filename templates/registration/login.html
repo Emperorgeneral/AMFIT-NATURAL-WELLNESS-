@@ -76,7 +76,7 @@
             {% endif %}
 
             <div class="form-row">
-                <label for="id_username">Username</label>
+                <label for="id_username">Username or email</label>
                 {{ form.username }}
                 {{ form.username.errors }}
             </div>
@@ -89,6 +89,8 @@
 
             <button type="submit" class="btn btn-primary auth-submit">Log In</button>
         </form>
+
+        <p class="auth-switch"><a href="{% url 'users:password_reset' %}">Forgot password?</a></p>
 
         <div class="auth-or-divider">
             <span class="line"></span>

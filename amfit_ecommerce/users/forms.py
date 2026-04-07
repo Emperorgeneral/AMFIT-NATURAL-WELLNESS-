@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 
@@ -45,5 +46,19 @@ class SignUpForm(UserCreationForm):
 
 
 class AmfitAuthenticationForm(AuthenticationForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Username'}))
+    username = forms.CharField(
+        label='Username or email',
+        widget=forms.TextInput(attrs={'placeholder': 'Username or email'}),
+    )
     password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password'}))
+
+    def clean_username(self):
+        login_value = self.cleaned_data.get('username', '').strip()
+        if '@' not in login_value:
+            return login_value
+
+        UserModel = get_user_model()
+        user = UserModel.objects.filter(email__iexact=login_value).first()
+        if user:
+            return user.get_username()
+        return login_value
