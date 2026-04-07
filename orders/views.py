@@ -10,6 +10,7 @@ from urllib.request import Request, urlopen
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -179,8 +180,12 @@ def checkout(request):
     total = subtotal + shipping + tax
 
     initial = {}
-    if hasattr(request.user, 'profile'):
+    try:
         profile = request.user.profile
+    except ObjectDoesNotExist:
+        profile = None
+
+    if profile:
         initial = {
             'shipping_address': profile.address or '',
             'shipping_city': profile.city or '',
