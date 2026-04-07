@@ -2,6 +2,7 @@ from decimal import Decimal
 import hashlib
 import hmac
 import json
+import logging
 from random import randint
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -23,14 +24,39 @@ from .forms import CheckoutForm
 from .models import Cart, CartItem, Order, OrderItem
 
 
+logger = logging.getLogger(__name__)
+
+
 def _get_or_create_cart(user):
     cart, _ = Cart.objects.get_or_create(user=user)
     return cart
 
 
 def _build_order_number():
-    timestamp = timezone.now().strftime('%Y%m%d%H%M')
-    return f'AMF-{timestamp}{randint(100, 999)}'
+    # Keep generating until we get a unique reference accepted by the DB and Paystack.
+    while True:
+        timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+        candidate = f'AMF-{timestamp}{randint(1000, 9999)}'
+        if not Order.objects.filter(order_number=candidate).exists():
+            return candidate
+
+
+def _paystack_initialize(order, user, callback_url):
+    email = user.email or f'{user.username}@example.com'
+    amount_kobo = int((order.total * Decimal('100')).quantize(Decimal('1')))
+
+    payload = {
+        'email': email,
+        'amount': amount_kobo,
+        'reference': order.order_number,
+        'callback_url': callback_url,
+        'metadata': {
+            'order_number': order.order_number,
+            'user_id': user.id,
+        },
+    }
+
+    return _paystack_request('/transaction/initialize', method='POST', payload=payload)
 
 
 def _paystack_request(path, method='GET', payload=None):
@@ -227,32 +253,70 @@ def paystack_initialize(request, order_number):
         return redirect('orders:order_history')
 
     callback_url = request.build_absolute_uri(reverse('orders:paystack_callback'))
-    email = request.user.email or f'{request.user.username}@example.com'
-    amount_kobo = int((order.total * Decimal('100')).quantize(Decimal('1')))
 
-    payload = {
-        'email': email,
-        'amount': amount_kobo,
-        'reference': order.order_number,
-        'callback_url': callback_url,
-        'metadata': {
-            'order_number': order.order_number,
-            'user_id': request.user.id,
-        },
-    }
-
-    result = _paystack_request('/transaction/initialize', method='POST', payload=payload)
+    result = _paystack_initialize(order, request.user, callback_url)
     if not result['ok']:
+        logger.error(
+            'Paystack initialize failed for order %s (user=%s): %s',
+            order.order_number,
+            request.user.id,
+            result['message'],
+        )
         messages.error(request, f"Unable to initialize payment: {result['message']}")
         return redirect('orders:order_history')
 
     response_data = result['data']
     if not response_data.get('status'):
-        messages.error(request, response_data.get('message', 'Unable to initialize payment.'))
-        return redirect('orders:order_history')
+        message = response_data.get('message', 'Unable to initialize payment.')
+        # Paystack can reject a reused reference (often surfaced as 1010/duplicate).
+        if 'reference' in message.lower() or 'duplicate' in message.lower() or '1010' in message:
+            old_reference = order.order_number
+            order.order_number = _build_order_number()
+            order.save(update_fields=['order_number', 'updated_at'])
+            logger.warning(
+                'Retrying Paystack initialize after reference issue. old=%s new=%s user=%s',
+                old_reference,
+                order.order_number,
+                request.user.id,
+            )
+            retry = _paystack_initialize(order, request.user, callback_url)
+            if not retry['ok']:
+                logger.error(
+                    'Paystack initialize retry failed for order %s (user=%s): %s',
+                    order.order_number,
+                    request.user.id,
+                    retry['message'],
+                )
+                messages.error(request, f"Unable to initialize payment: {retry['message']}")
+                return redirect('orders:order_history')
+            response_data = retry['data']
+            if not response_data.get('status'):
+                logger.error(
+                    'Paystack initialize retry returned non-success for order %s (user=%s): %s',
+                    order.order_number,
+                    request.user.id,
+                    response_data,
+                )
+                messages.error(request, response_data.get('message', 'Unable to initialize payment.'))
+                return redirect('orders:order_history')
+        else:
+            logger.error(
+                'Paystack initialize returned non-success for order %s (user=%s): %s',
+                order.order_number,
+                request.user.id,
+                response_data,
+            )
+            messages.error(request, message)
+            return redirect('orders:order_history')
 
     auth_url = response_data.get('data', {}).get('authorization_url')
     if not auth_url:
+        logger.error(
+            'Paystack initialize missing authorization_url for order %s (user=%s): %s',
+            order.order_number,
+            request.user.id,
+            response_data,
+        )
         messages.error(request, 'Payment link was not returned by Paystack.')
         return redirect('orders:order_history')
 
