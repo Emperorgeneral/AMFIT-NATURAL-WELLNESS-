@@ -76,17 +76,48 @@
 
         <form method="post" class="auth-form auth-grid">
             {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="form-errors" style="grid-column:1/-1;">{{ form.non_field_errors }}</div>
+            {% endif %}
 
-            {% for field in form %}
-                <div class="form-row">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <small class="form-help">{{ field.help_text|safe }}</small>
-                    {% endif %}
-                    {{ field.errors }}
-                </div>
-            {% endfor %}
+            <div class="form-row">
+                <label for="{{ form.first_name.id_for_label }}">First name</label>
+                {{ form.first_name }}
+                {{ form.first_name.errors }}
+            </div>
+
+            <div class="form-row">
+                <label for="{{ form.last_name.id_for_label }}">Last name</label>
+                {{ form.last_name }}
+                {{ form.last_name.errors }}
+            </div>
+
+            <div class="form-row">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
+                {{ form.username.errors }}
+            </div>
+
+            <div class="form-row">
+                <label for="{{ form.email.id_for_label }}">Email</label>
+                {{ form.email }}
+                {{ form.email.errors }}
+            </div>
+
+            <div class="form-row">
+                <label for="{{ form.password1.id_for_label }}">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.help_text %}
+                    <small class="form-help">{{ form.password1.help_text|safe }}</small>
+                {% endif %}
+                {{ form.password1.errors }}
+            </div>
+
+            <div class="form-row">
+                <label for="{{ form.password2.id_for_label }}">Confirm password</label>
+                {{ form.password2 }}
+                {{ form.password2.errors }}
+            </div>
 
             <button type="submit" class="btn btn-primary auth-submit signup-submit">Create Account</button>
         </form>
