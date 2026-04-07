@@ -1,3 +1,5 @@
+from decimal import Decimal, InvalidOperation
+
 from django.db import models
 from django.contrib.auth.models import User
 from products.models import Product
@@ -94,7 +96,14 @@ class CartItem(models.Model):
 
     @property
     def total(self):
-        return self.product.discounted_price * self.quantity if self.product.is_on_sale else self.product.price * self.quantity
+        try:
+            if self.product.is_on_sale and self.product.discounted_price is not None:
+                return Decimal(self.product.discounted_price) * self.quantity
+            if self.product.price is not None:
+                return Decimal(self.product.price) * self.quantity
+        except (TypeError, ValueError, InvalidOperation):
+            pass
+        return Decimal('0.00')
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity} in {self.cart.user.username}'s cart"

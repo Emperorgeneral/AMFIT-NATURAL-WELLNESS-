@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import hashlib
 import hmac
 import json
@@ -35,11 +35,29 @@ def _get_or_create_cart(user):
 
 def _build_order_number():
     # Keep generating until we get a unique reference accepted by the DB and Paystack.
+    # Keep reference <= 20 chars to match Order.order_number max_length.
     while True:
-        timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
-        candidate = f'AMF-{timestamp}{randint(1000, 9999)}'
+        timestamp = timezone.now().strftime('%y%m%d%H%M%S')
+        candidate = f'AMF{timestamp}{randint(100, 999)}'
         if not Order.objects.filter(order_number=candidate).exists():
             return candidate
+
+
+def _get_cart_item_unit_price(item):
+    try:
+        if item.product.is_on_sale and item.product.discounted_price is not None:
+            return Decimal(item.product.discounted_price)
+        if item.product.price is not None:
+            return Decimal(item.product.price)
+    except (TypeError, ValueError, InvalidOperation):
+        pass
+
+    logger.warning('Invalid product price for product_id=%s in cart_item_id=%s', item.product_id, item.id)
+    return Decimal('0.00')
+
+
+def _get_cart_item_total(item):
+    return _get_cart_item_unit_price(item) * item.quantity
 
 
 def _paystack_initialize(order, user, callback_url):
@@ -116,7 +134,7 @@ def add_to_cart(request, slug):
 def cart_detail(request):
     cart = _get_or_create_cart(request.user)
     cart_items = cart.items.select_related('product').all()
-    subtotal = sum((item.total for item in cart_items), Decimal('0.00'))
+    subtotal = sum((_get_cart_item_total(item) for item in cart_items), Decimal('0.00'))
     shipping = Decimal('0.00') if subtotal >= Decimal('25000.00') or subtotal == 0 else Decimal('2500.00')
     tax = (subtotal * Decimal('0.075')).quantize(Decimal('0.01'))
     total = subtotal + shipping + tax
@@ -174,7 +192,7 @@ def checkout(request):
         messages.info(request, 'Your cart is empty. Add products before checking out.')
         return redirect('orders:cart_detail')
 
-    subtotal = sum((item.total for item in cart_items), Decimal('0.00'))
+    subtotal = sum((_get_cart_item_total(item) for item in cart_items), Decimal('0.00'))
     shipping = Decimal('0.00') if subtotal >= Decimal('25000.00') else Decimal('2500.00')
     tax = (subtotal * Decimal('0.075')).quantize(Decimal('0.01'))
     total = subtotal + shipping + tax
@@ -215,7 +233,7 @@ def checkout(request):
             )
 
             for item in cart_items:
-                unit_price = item.product.discounted_price if item.product.is_on_sale else item.product.price
+                unit_price = _get_cart_item_unit_price(item)
                 OrderItem.objects.create(
                     order=order,
                     product=item.product,
@@ -223,7 +241,8 @@ def checkout(request):
                     price=unit_price,
                     total=unit_price * item.quantity,
                 )
-                item.product.stock_quantity = max(item.product.stock_quantity - item.quantity, 0)
+                current_stock = item.product.stock_quantity or 0
+                item.product.stock_quantity = max(current_stock - item.quantity, 0)
                 item.product.save(update_fields=['stock_quantity'])
 
             cart.items.all().delete()
