@@ -170,6 +170,26 @@ def _paystack_request(path, method='GET', payload=None):
         return {'ok': False, 'message': str(exc)}
 
 
+def _resolve_order_by_reference(reference):
+    order = Order.objects.filter(paystack_reference=reference).first()
+    if order is None:
+        order = Order.objects.filter(order_number=reference).first()
+    return order
+
+
+def _mark_order_paid(order):
+    if order.payment_status != 'paid':
+        order.payment_status = 'paid'
+        if order.status == 'pending':
+            order.status = 'processing'
+        order.save(update_fields=['payment_status', 'status', 'updated_at'])
+
+
+def _mark_order_payment_failed(order, failed_status='failed'):
+    order.payment_status = failed_status
+    order.save(update_fields=['payment_status', 'updated_at'])
+
+
 def _is_reference_issue(message):
     text = (message or '').lower()
     return 'reference' in text or 'duplicate' in text or '1010' in text
@@ -296,6 +316,8 @@ def checkout(request):
                 status='pending',
                 payment_status='pending',
             )
+            order.paystack_reference = _build_paystack_reference(order)
+            order.save(update_fields=['paystack_reference', 'updated_at'])
 
             for item in cart_items:
                 unit_price = _get_cart_item_unit_price(item)
@@ -306,13 +328,29 @@ def checkout(request):
                     price=unit_price,
                     total=unit_price * item.quantity,
                 )
-                current_stock = item.product.stock_quantity or 0
-                item.product.stock_quantity = max(current_stock - item.quantity, 0)
-                item.product.save(update_fields=['stock_quantity'])
+
+            callback_url = request.build_absolute_uri(reverse('orders:payment_verify'))
+            result = _initialize_paystack_with_retry(order, request.user, callback_url, max_attempts=3)
+            if not result['ok']:
+                _mark_order_payment_failed(order, failed_status='failed')
+                logger.error(
+                    'Checkout payment initialize failed for order %s (user=%s): %s',
+                    order.order_number,
+                    request.user.id,
+                    result['message'],
+                )
+                messages.error(request, f"Unable to initialize payment: {result['message']}")
+                return redirect('orders:order_history')
+
+            auth_url = result['data'].get('data', {}).get('authorization_url')
+            if not auth_url:
+                _mark_order_payment_failed(order, failed_status='failed')
+                logger.error('Checkout initialize missing authorization_url for order %s', order.order_number)
+                messages.error(request, 'Payment link was not returned by Paystack.')
+                return redirect('orders:order_history')
 
             cart.items.all().delete()
-            messages.success(request, f'Order {order.order_number} created. Continue to Paystack payment.')
-            return redirect('orders:paystack_initialize', order_number=order.order_number)
+            return redirect(auth_url)
     else:
         form = CheckoutForm(initial=initial)
 
@@ -337,11 +375,11 @@ def order_history(request):
 def paystack_initialize(request, order_number):
     order = get_object_or_404(Order, order_number=order_number, user=request.user)
 
-    if order.payment_status == 'completed':
+    if order.payment_status == 'paid':
         messages.info(request, 'This order is already paid.')
         return redirect('orders:order_history')
 
-    callback_url = request.build_absolute_uri(reverse('orders:paystack_callback'))
+    callback_url = request.build_absolute_uri(reverse('orders:payment_verify'))
 
     if not order.paystack_reference:
         order.paystack_reference = _build_paystack_reference(order)
@@ -379,32 +417,51 @@ def paystack_callback(request):
     if not reference:
         return HttpResponseBadRequest('Missing payment reference.')
 
-    order = Order.objects.filter(paystack_reference=reference).first()
+    order = _resolve_order_by_reference(reference)
     if order is None:
-        order = get_object_or_404(Order, order_number=reference)
+        return HttpResponseBadRequest('Unknown payment reference.')
     result = _paystack_request(f'/transaction/verify/{reference}')
 
+    context = {
+        'order': order,
+        'payment_success': False,
+        'payment_state': 'failed',
+        'message': 'Payment verification failed.',
+        'retry_url': reverse('orders:paystack_initialize', kwargs={'order_number': order.order_number}),
+    }
+
     if not result['ok']:
-        order.payment_status = 'failed'
-        order.save(update_fields=['payment_status', 'updated_at'])
-        messages.error(request, f"Payment verification failed: {result['message']}")
-        return redirect('orders:order_history')
+        _mark_order_payment_failed(order, failed_status='failed')
+        context['message'] = f"Payment verification failed: {result['message']}"
+        return render(request, 'orders/payment_result.html', context)
 
     response_data = result['data']
     gateway_data = response_data.get('data', {})
-    paid = response_data.get('status') and gateway_data.get('status') == 'success'
+    gateway_status = (gateway_data.get('status') or '').lower()
+    expected_amount_kobo = int((order.total * Decimal('100')).quantize(Decimal('1')))
+    amount_matches = gateway_data.get('amount') == expected_amount_kobo
 
-    if paid:
-        order.payment_status = 'completed'
-        order.status = 'processing'
-        order.save(update_fields=['payment_status', 'status', 'updated_at'])
-        messages.success(request, f'Payment received for order {order.order_number}.')
+    if response_data.get('status') and gateway_status == 'success' and amount_matches:
+        _mark_order_paid(order)
+        context['payment_success'] = True
+        context['payment_state'] = 'paid'
+        context['message'] = f'Payment received for order {order.order_number}.'
+        context['retry_url'] = ''
+        return render(request, 'orders/payment_result.html', context)
+
+    if gateway_status == 'abandoned':
+        _mark_order_payment_failed(order, failed_status='abandoned')
+        context['payment_state'] = 'abandoned'
+        context['message'] = 'Payment session was abandoned. You can retry payment below.'
+        return render(request, 'orders/payment_result.html', context)
+
+    _mark_order_payment_failed(order, failed_status='failed')
+    if response_data.get('status') and gateway_status == 'success' and not amount_matches:
+        context['message'] = 'Payment amount mismatch detected. Please contact support with your order number.'
     else:
-        order.payment_status = 'failed'
-        order.save(update_fields=['payment_status', 'updated_at'])
-        messages.error(request, 'Payment was not successful. Please try again.')
+        context['message'] = 'Payment was not successful. Please retry payment.'
 
-    return redirect('orders:order_history')
+    return render(request, 'orders/payment_result.html', context)
 
 
 @csrf_exempt
@@ -429,15 +486,11 @@ def paystack_webhook(request):
         data = payload.get('data', {})
         reference = data.get('reference')
         if reference:
-            try:
-                order = Order.objects.filter(paystack_reference=reference).first()
-                if order is None:
-                    order = Order.objects.get(order_number=reference)
-                order.payment_status = 'completed'
-                if order.status == 'pending':
-                    order.status = 'processing'
-                order.save(update_fields=['payment_status', 'status', 'updated_at'])
-            except Order.DoesNotExist:
-                pass
+            order = _resolve_order_by_reference(reference)
+            if order is not None:
+                expected_amount_kobo = int((order.total * Decimal('100')).quantize(Decimal('1')))
+                webhook_amount = data.get('amount')
+                if webhook_amount == expected_amount_kobo:
+                    _mark_order_paid(order)
 
     return JsonResponse({'status': 'ok'})

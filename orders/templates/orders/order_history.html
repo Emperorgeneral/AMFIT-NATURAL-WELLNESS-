@@ -18,6 +18,7 @@
 .oh-item-row { display: flex; justify-content: space-between; gap: 1rem; }
 .oh-item-val { color: var(--ink); }
 .empty-state-title { display: block; margin-bottom: 0.35rem; }
+.oh-actions { margin-top: 1rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
 </style>
 <div class="container">
     <div class="breadcrumb">
@@ -52,6 +53,11 @@
                         </div>
                         {% endfor %}
                     </div>
+                    {% if order.payment_status != 'paid' %}
+                    <div class="oh-actions">
+                        <a class="btn btn-accent" href="{% url 'orders:paystack_initialize' order.order_number %}">Retry payment</a>
+                    </div>
+                    {% endif %}
                 </article>
                 {% endfor %}
             </div>

@@ -65,7 +65,8 @@ class OrderAdmin(admin.ModelAdmin):
         colors = {
             'pending': '#fdcb6e',
             'paid': '#00b894',
-            'failed': '#d63031'
+            'failed': '#d63031',
+            'abandoned': '#e17055',
         }
         color = colors.get(obj.payment_status, '#636e72')
         return format_html(

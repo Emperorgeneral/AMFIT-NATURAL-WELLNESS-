@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Result | AMFIT{% endblock %}
+
+{% block content %}
+<style>
+.pr-wrap { max-width: 760px; margin: 0 auto; }
+.pr-card { background: #fff; border: 1px solid var(--border); border-radius: 24px; padding: 2rem; box-shadow: var(--shadow-card); }
+.pr-title { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 0.6rem; }
+.pr-sub { color: var(--muted); margin-bottom: 1.25rem; }
+.pr-state { display: inline-block; padding: 0.45rem 0.9rem; border-radius: 999px; font-weight: 700; margin-bottom: 1rem; }
+.pr-state-paid { background: #e7f8ef; color: #19713f; }
+.pr-state-failed { background: #fdecea; color: #9b2226; }
+.pr-state-abandoned { background: #fff4e6; color: #8a4b08; }
+.pr-meta { display: grid; gap: 0.4rem; color: var(--muted); margin-bottom: 1.4rem; }
+.pr-meta strong { color: var(--ink); }
+.pr-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+
+@media (max-width: 680px) {
+    .pr-card { padding: 1.2rem; }
+    .pr-actions .btn { width: 100%; text-align: center; }
+}
+</style>
+
+<div class="container pr-wrap">
+    <div class="breadcrumb">
+        <a href="{% url 'products:home' %}">Home</a> /
+        <a href="{% url 'orders:order_history' %}">Orders</a> / Payment result
+    </div>
+
+    <section class="pr-card">
+        {% if payment_state == 'paid' %}
+            <span class="pr-state pr-state-paid">Payment successful</span>
+        {% elif payment_state == 'abandoned' %}
+            <span class="pr-state pr-state-abandoned">Payment abandoned</span>
+        {% else %}
+            <span class="pr-state pr-state-failed">Payment failed</span>
+        {% endif %}
+
+        <h1 class="pr-title">{{ message }}</h1>
+        <p class="pr-sub">Order tracking is updated in real time after payment verification.</p>
+
+        <div class="pr-meta">
+            <span>Order number: <strong>{{ order.order_number }}</strong></span>
+            <span>Payment status: <strong>{{ order.get_payment_status_display }}</strong></span>
+            <span>Amount: <strong>₦{{ order.total }}</strong></span>
+        </div>
+
+        <div class="pr-actions">
+            <a href="{% url 'orders:order_history' %}" class="btn btn-secondary">View order history</a>
+            {% if retry_url %}
+            <a href="{{ retry_url }}" class="btn btn-accent">Retry payment</a>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}
