@@ -44,6 +44,11 @@
             .google-login-btn svg {
                 flex-shrink: 0;
             }
+            .signup-submit {
+                grid-column: 1 / -1;
+                width: 100%;
+                min-width: 0;
+            }
             @media (max-width: 520px) {
                 .auth-or-divider {
                     margin: 0.8rem 0 0.65rem;
@@ -83,7 +88,7 @@
                 </div>
             {% endfor %}
 
-            <button type="submit" class="btn btn-primary auth-submit">Create Account</button>
+            <button type="submit" class="btn btn-primary auth-submit signup-submit">Create Account</button>
         </form>
 
         <div class="auth-or-divider">
