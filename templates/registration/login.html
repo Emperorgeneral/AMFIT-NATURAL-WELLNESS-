@@ -12,9 +12,6 @@
             <p>Sign in to manage orders, save your details, and move through checkout faster.</p>
         </div>
 
-        <a href="{% provider_login_url 'google' process='login' %}" class="btn btn-outline auth-submit" style="display:block; text-align:center; margin-bottom:0.75rem;">Continue with Google</a>
-        <div style="text-align:center; margin:0.25rem 0 0.9rem; color:#6b7280; font-size:0.9rem;">or sign in with your username</div>
-
         <form method="post" class="auth-form">
             {% csrf_token %}
             {% if form.non_field_errors %}
@@ -35,6 +32,9 @@
 
             <button type="submit" class="btn btn-primary auth-submit">Log In</button>
         </form>
+
+        <a href="{% provider_login_url 'google' process='login' %}" class="btn btn-outline auth-submit" style="display:block; text-align:center; margin:0.75rem 0;">Continue with Google</a>
+        <div style="text-align:center; margin:0.25rem 0 0.9rem; color:#6b7280; font-size:0.9rem;">or sign in with your username</div>
 
         <p class="auth-switch">New here? <a href="{% url 'users:signup' %}">Create an account</a></p>
     </div>
