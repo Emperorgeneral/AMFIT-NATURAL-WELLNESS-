@@ -21,6 +21,26 @@
 .co-divider { height: 1px; background: var(--border); margin: 0.3rem 0; }
 .co-grand-row { display: flex; justify-content: space-between; font-size: 1.12rem; }
 .co-grand-val { color: var(--brand); }
+
+@media (max-width: 960px) {
+    .co-layout { grid-template-columns: 1fr; }
+    .co-summary-sticky { position: static; top: auto; }
+}
+
+@media (max-width: 680px) {
+    .co-form-pad { padding: 1rem; }
+    .co-form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .co-form-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+    .co-item-row {
+        flex-wrap: wrap;
+    }
+}
 </style>
 <div class="container">
     <div class="breadcrumb">
