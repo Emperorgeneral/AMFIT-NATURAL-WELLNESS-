@@ -46,9 +46,59 @@ def _build_order_number():
 def _build_paystack_reference(order):
     while True:
         timestamp = timezone.now().strftime('%y%m%d%H%M%S%f')
-        candidate = f"AMF-{order.id}-{timestamp}-{randint(1000, 9999)}"
+        candidate = f"AMF{order.id}{timestamp}{randint(1000, 9999)}"
         if not Order.objects.filter(paystack_reference=candidate).exists():
             return candidate
+
+
+def _initialize_paystack_with_retry(order, user, callback_url, max_attempts=3):
+    last_message = 'Unable to initialize payment.'
+
+    for attempt in range(1, max_attempts + 1):
+        result = _paystack_initialize(order, user, callback_url)
+
+        if not result['ok']:
+            message = result.get('message', 'Unable to initialize payment.')
+            last_message = message
+            if _is_reference_issue(message) and attempt < max_attempts:
+                old_reference = order.paystack_reference
+                order.paystack_reference = _build_paystack_reference(order)
+                order.save(update_fields=['paystack_reference', 'updated_at'])
+                logger.warning(
+                    'Retrying Paystack initialize after HTTP reference issue (attempt %s/%s). old=%s new=%s user=%s message=%s',
+                    attempt,
+                    max_attempts,
+                    old_reference,
+                    order.paystack_reference,
+                    user.id,
+                    message,
+                )
+                continue
+            return {'ok': False, 'message': message}
+
+        response_data = result['data']
+        if response_data.get('status'):
+            return {'ok': True, 'data': response_data}
+
+        message = response_data.get('message', 'Unable to initialize payment.')
+        last_message = message
+        if _is_reference_issue(message) and attempt < max_attempts:
+            old_reference = order.paystack_reference
+            order.paystack_reference = _build_paystack_reference(order)
+            order.save(update_fields=['paystack_reference', 'updated_at'])
+            logger.warning(
+                'Retrying Paystack initialize after response reference issue (attempt %s/%s). old=%s new=%s user=%s',
+                attempt,
+                max_attempts,
+                old_reference,
+                order.paystack_reference,
+                user.id,
+            )
+            continue
+
+        return {'ok': False, 'message': message}
+
+    return {'ok': False, 'message': last_message}
 
 
 def _get_cart_item_unit_price(item):
@@ -297,84 +347,18 @@ def paystack_initialize(request, order_number):
         order.paystack_reference = _build_paystack_reference(order)
         order.save(update_fields=['paystack_reference', 'updated_at'])
 
-    result = _paystack_initialize(order, request.user, callback_url)
+    result = _initialize_paystack_with_retry(order, request.user, callback_url, max_attempts=3)
     if not result['ok']:
-        message = result['message']
-        if _is_reference_issue(message):
-            old_reference = order.paystack_reference
-            order.paystack_reference = _build_paystack_reference(order)
-            order.save(update_fields=['paystack_reference', 'updated_at'])
-            logger.warning(
-                'Retrying Paystack initialize after HTTP reference issue. old=%s new=%s user=%s message=%s',
-                old_reference,
-                order.paystack_reference,
-                request.user.id,
-                message,
-            )
-            retry = _paystack_initialize(order, request.user, callback_url)
-            if not retry['ok']:
-                logger.error(
-                    'Paystack initialize retry failed for order %s (user=%s): %s',
-                    order.paystack_reference,
-                    request.user.id,
-                    retry['message'],
-                )
-                messages.error(request, f"Unable to initialize payment: {retry['message']}")
-                return redirect('orders:order_history')
-            result = retry
-        else:
-            logger.error(
-                'Paystack initialize failed for order %s (user=%s): %s',
-                order.paystack_reference,
-                request.user.id,
-                message,
-            )
-            messages.error(request, f"Unable to initialize payment: {message}")
-            return redirect('orders:order_history')
+        logger.error(
+            'Paystack initialize failed after retries for order %s (user=%s): %s',
+            order.paystack_reference,
+            request.user.id,
+            result['message'],
+        )
+        messages.error(request, f"Unable to initialize payment: {result['message']}")
+        return redirect('orders:order_history')
 
     response_data = result['data']
-    if not response_data.get('status'):
-        message = response_data.get('message', 'Unable to initialize payment.')
-        # Paystack can reject a reused reference (often surfaced as 1010/duplicate).
-        if _is_reference_issue(message):
-            old_reference = order.paystack_reference
-            order.paystack_reference = _build_paystack_reference(order)
-            order.save(update_fields=['paystack_reference', 'updated_at'])
-            logger.warning(
-                'Retrying Paystack initialize after reference issue. old=%s new=%s user=%s',
-                old_reference,
-                order.paystack_reference,
-                request.user.id,
-            )
-            retry = _paystack_initialize(order, request.user, callback_url)
-            if not retry['ok']:
-                logger.error(
-                    'Paystack initialize retry failed for order %s (user=%s): %s',
-                    order.paystack_reference,
-                    request.user.id,
-                    retry['message'],
-                )
-                messages.error(request, f"Unable to initialize payment: {retry['message']}")
-                return redirect('orders:order_history')
-            response_data = retry['data']
-            if not response_data.get('status'):
-                logger.error(
-                    'Paystack initialize retry returned non-success for order %s (user=%s): %s',
-                    order.paystack_reference,
-                    request.user.id,
-                    response_data,
-                )
-                messages.error(request, response_data.get('message', 'Unable to initialize payment.'))
-                return redirect('orders:order_history')
-        else:
-            logger.error(
-                'Paystack initialize returned non-success for order %s (user=%s): %s',
-                order.paystack_reference,
-                request.user.id,
-                response_data,
-            )
-            messages.error(request, message)
-            return redirect('orders:order_history')
 
     auth_url = response_data.get('data', {}).get('authorization_url')
     if not auth_url:
