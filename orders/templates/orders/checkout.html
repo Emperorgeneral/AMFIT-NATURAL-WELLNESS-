@@ -33,7 +33,7 @@
         <div class="co-head">
             <div>
                 <h1 class="co-title">Confirm delivery details</h1>
-                <p class="co-sub">This completes the pre-payment order flow. Flutterwave can plug into this step next.</p>
+                <p class="co-sub">After placing this order, you will be redirected to Paystack to complete secure payment.</p>
             </div>
         </div>
 
@@ -50,7 +50,7 @@
                     {% endfor %}
                 </div>
                 <div class="co-form-actions">
-                    <button type="submit" class="btn btn-accent">Place order</button>
+                    <button type="submit" class="btn btn-accent">Place order and pay with Paystack</button>
                     <a href="{% url 'orders:cart_detail' %}" class="btn btn-secondary">Back to cart</a>
                 </div>
             </form>

@@ -1,11 +1,21 @@
 from decimal import Decimal
+import hashlib
+import hmac
+import json
 from random import randint
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.db import transaction
+from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from products.models import Product
 
@@ -21,6 +31,38 @@ def _get_or_create_cart(user):
 def _build_order_number():
     timestamp = timezone.now().strftime('%Y%m%d%H%M')
     return f'AMF-{timestamp}{randint(100, 999)}'
+
+
+def _paystack_request(path, method='GET', payload=None):
+    if not settings.PAYSTACK_SECRET_KEY:
+        return {'ok': False, 'message': 'Payment gateway is not configured yet.'}
+
+    url = f'https://api.paystack.co{path}'
+    headers = {
+        'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}',
+        'Content-Type': 'application/json',
+    }
+
+    body = None
+    if payload is not None:
+        body = json.dumps(payload).encode('utf-8')
+
+    request = Request(url, data=body, headers=headers, method=method)
+
+    try:
+        with urlopen(request, timeout=25) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            return {'ok': True, 'data': data}
+    except HTTPError as exc:
+        raw = exc.read().decode('utf-8', errors='ignore') if hasattr(exc, 'read') else ''
+        try:
+            parsed = json.loads(raw) if raw else {}
+            message = parsed.get('message') or str(exc)
+        except json.JSONDecodeError:
+            message = raw or str(exc)
+        return {'ok': False, 'message': message}
+    except (URLError, TimeoutError) as exc:
+        return {'ok': False, 'message': str(exc)}
 
 
 @login_required
@@ -154,8 +196,8 @@ def checkout(request):
                 item.product.save(update_fields=['stock_quantity'])
 
             cart.items.all().delete()
-            messages.success(request, f'Order {order.order_number} created successfully. Payment integration can be added next.')
-            return redirect('orders:order_history')
+            messages.success(request, f'Order {order.order_number} created. Continue to Paystack payment.')
+            return redirect('orders:paystack_initialize', order_number=order.order_number)
     else:
         form = CheckoutForm(initial=initial)
 
@@ -174,3 +216,109 @@ def checkout(request):
 def order_history(request):
     orders = request.user.orders.prefetch_related('items__product').all()
     return render(request, 'orders/order_history.html', {'orders': orders})
+
+
+@login_required
+def paystack_initialize(request, order_number):
+    order = get_object_or_404(Order, order_number=order_number, user=request.user)
+
+    if order.payment_status == 'completed':
+        messages.info(request, 'This order is already paid.')
+        return redirect('orders:order_history')
+
+    callback_url = request.build_absolute_uri(reverse('orders:paystack_callback'))
+    email = request.user.email or f'{request.user.username}@example.com'
+    amount_kobo = int((order.total * Decimal('100')).quantize(Decimal('1')))
+
+    payload = {
+        'email': email,
+        'amount': amount_kobo,
+        'reference': order.order_number,
+        'callback_url': callback_url,
+        'metadata': {
+            'order_number': order.order_number,
+            'user_id': request.user.id,
+        },
+    }
+
+    result = _paystack_request('/transaction/initialize', method='POST', payload=payload)
+    if not result['ok']:
+        messages.error(request, f"Unable to initialize payment: {result['message']}")
+        return redirect('orders:order_history')
+
+    response_data = result['data']
+    if not response_data.get('status'):
+        messages.error(request, response_data.get('message', 'Unable to initialize payment.'))
+        return redirect('orders:order_history')
+
+    auth_url = response_data.get('data', {}).get('authorization_url')
+    if not auth_url:
+        messages.error(request, 'Payment link was not returned by Paystack.')
+        return redirect('orders:order_history')
+
+    return redirect(auth_url)
+
+
+def paystack_callback(request):
+    reference = request.GET.get('reference')
+    if not reference:
+        return HttpResponseBadRequest('Missing payment reference.')
+
+    order = get_object_or_404(Order, order_number=reference)
+    result = _paystack_request(f'/transaction/verify/{reference}')
+
+    if not result['ok']:
+        order.payment_status = 'failed'
+        order.save(update_fields=['payment_status', 'updated_at'])
+        messages.error(request, f"Payment verification failed: {result['message']}")
+        return redirect('orders:order_history')
+
+    response_data = result['data']
+    gateway_data = response_data.get('data', {})
+    paid = response_data.get('status') and gateway_data.get('status') == 'success'
+
+    if paid:
+        order.payment_status = 'completed'
+        order.status = 'processing'
+        order.save(update_fields=['payment_status', 'status', 'updated_at'])
+        messages.success(request, f'Payment received for order {order.order_number}.')
+    else:
+        order.payment_status = 'failed'
+        order.save(update_fields=['payment_status', 'updated_at'])
+        messages.error(request, 'Payment was not successful. Please try again.')
+
+    return redirect('orders:order_history')
+
+
+@csrf_exempt
+@require_POST
+def paystack_webhook(request):
+    secret = settings.PAYSTACK_WEBHOOK_SECRET or settings.PAYSTACK_SECRET_KEY
+    signature = request.headers.get('x-paystack-signature', '')
+
+    if not secret:
+        return JsonResponse({'status': 'ignored', 'reason': 'missing secret'}, status=200)
+
+    computed = hmac.new(secret.encode('utf-8'), request.body, hashlib.sha512).hexdigest()
+    if not hmac.compare_digest(computed, signature):
+        return JsonResponse({'status': 'invalid signature'}, status=401)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'invalid payload'}, status=400)
+
+    if payload.get('event') == 'charge.success':
+        data = payload.get('data', {})
+        reference = data.get('reference')
+        if reference:
+            try:
+                order = Order.objects.get(order_number=reference)
+                order.payment_status = 'completed'
+                if order.status == 'pending':
+                    order.status = 'processing'
+                order.save(update_fields=['payment_status', 'status', 'updated_at'])
+            except Order.DoesNotExist:
+                pass
+
+    return JsonResponse({'status': 'ok'})
