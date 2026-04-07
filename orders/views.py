@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import logging
+import re
 from random import randint
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -10,7 +11,8 @@ from urllib.request import Request, urlopen
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.validators import validate_email
 from django.db import transaction
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -53,6 +55,7 @@ def _build_paystack_reference(order):
 
 def _initialize_paystack_with_retry(order, user, callback_url, max_attempts=3):
     last_message = 'Unable to initialize payment.'
+    last_details = {}
 
     for attempt in range(1, max_attempts + 1):
         result = _paystack_initialize(order, user, callback_url)
@@ -60,6 +63,7 @@ def _initialize_paystack_with_retry(order, user, callback_url, max_attempts=3):
         if not result['ok']:
             message = result.get('message', 'Unable to initialize payment.')
             last_message = message
+            last_details = result.get('details', {})
             if _is_reference_issue(message) and attempt < max_attempts:
                 old_reference = order.paystack_reference
                 order.paystack_reference = _build_paystack_reference(order)
@@ -74,7 +78,7 @@ def _initialize_paystack_with_retry(order, user, callback_url, max_attempts=3):
                     message,
                 )
                 continue
-            return {'ok': False, 'message': message}
+            return {'ok': False, 'message': message, 'details': last_details}
 
         response_data = result['data']
         if response_data.get('status'):
@@ -96,9 +100,9 @@ def _initialize_paystack_with_retry(order, user, callback_url, max_attempts=3):
             )
             continue
 
-        return {'ok': False, 'message': message}
+        return {'ok': False, 'message': message, 'details': last_details}
 
-    return {'ok': False, 'message': last_message}
+    return {'ok': False, 'message': last_message, 'details': last_details}
 
 
 def _get_cart_item_unit_price(item):
@@ -119,9 +123,24 @@ def _get_cart_item_total(item):
 
 
 def _paystack_initialize(order, user, callback_url):
-    email = user.email or f'{user.username}@example.com'
+    email = (user.email or '').strip()
     amount_kobo = int((order.total * Decimal('100')).quantize(Decimal('1')))
-    reference = order.paystack_reference or order.order_number
+    reference = (order.paystack_reference or order.order_number or '').strip()
+
+    valid, validation_message = _validate_paystack_initialize_input(
+        order=order,
+        email=email,
+        amount_kobo=amount_kobo,
+        reference=reference,
+    )
+    if not valid:
+        logger.error(
+            'Paystack initialize validation failed for order=%s user=%s: %s',
+            order.order_number,
+            user.id,
+            validation_message,
+        )
+        return {'ok': False, 'message': validation_message}
 
     payload = {
         'email': email,
@@ -139,14 +158,22 @@ def _paystack_initialize(order, user, callback_url):
 
 
 def _paystack_request(path, method='GET', payload=None):
-    if not settings.PAYSTACK_SECRET_KEY:
-        return {'ok': False, 'message': 'Payment gateway is not configured yet.'}
+    secret_key = (settings.PAYSTACK_SECRET_KEY or '').strip()
+    if not secret_key:
+        return {'ok': False, 'message': 'Payment gateway secret key is missing.'}
+    if not (secret_key.startswith('sk_test_') or secret_key.startswith('sk_live_')):
+        return {'ok': False, 'message': 'Payment gateway secret key format is invalid.'}
 
     url = f'https://api.paystack.co{path}'
     headers = {
-        'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}',
+        'Authorization': f'Bearer {secret_key}',
         'Content-Type': 'application/json',
     }
+
+    if not headers.get('Authorization', '').startswith('Bearer '):
+        return {'ok': False, 'message': 'Payment request authorization header is invalid.'}
+    if headers.get('Content-Type') != 'application/json':
+        return {'ok': False, 'message': 'Payment request content-type header is invalid.'}
 
     body = None
     if payload is not None:
@@ -160,14 +187,59 @@ def _paystack_request(path, method='GET', payload=None):
             return {'ok': True, 'data': data}
     except HTTPError as exc:
         raw = exc.read().decode('utf-8', errors='ignore') if hasattr(exc, 'read') else ''
+        response_headers = dict(exc.headers.items()) if getattr(exc, 'headers', None) else {}
         try:
             parsed = json.loads(raw) if raw else {}
             message = parsed.get('message') or str(exc)
         except json.JSONDecodeError:
+            parsed = {}
             message = raw or str(exc)
-        return {'ok': False, 'message': message}
+
+        details = {
+            'status_code': getattr(exc, 'code', None),
+            'reason': str(getattr(exc, 'reason', '')),
+            'method': method,
+            'path': path,
+            'url': url,
+            'response_headers': response_headers,
+            'response_body': raw,
+            'parsed_response': parsed,
+        }
+        logger.error('Paystack API HTTP error details: %s', json.dumps(details, default=str))
+        return {'ok': False, 'message': message, 'details': details}
     except (URLError, TimeoutError) as exc:
-        return {'ok': False, 'message': str(exc)}
+        details = {
+            'method': method,
+            'path': path,
+            'url': url,
+            'error': str(exc),
+        }
+        logger.error('Paystack API network error details: %s', json.dumps(details, default=str))
+        return {'ok': False, 'message': str(exc), 'details': details}
+
+
+def _validate_paystack_initialize_input(order, email, amount_kobo, reference):
+    if not email:
+        return False, 'A valid customer email is required for payment.'
+
+    try:
+        validate_email(email)
+    except ValidationError:
+        return False, 'Customer email format is invalid for payment initialization.'
+
+    if not isinstance(amount_kobo, int) or amount_kobo <= 0:
+        return False, 'Payment amount is invalid. Amount must be in kobo and greater than zero.'
+
+    if not reference:
+        return False, 'Payment reference is missing.'
+    if not re.fullmatch(r'[A-Za-z0-9_-]{6,80}', reference):
+        return False, 'Payment reference format is invalid.'
+
+    duplicate_reference = Order.objects.filter(paystack_reference=reference).exclude(id=order.id).exists()
+    if duplicate_reference:
+        return False, 'Payment reference must be unique.'
+
+    return True, ''
 
 
 def _resolve_order_by_reference(reference):
@@ -334,10 +406,11 @@ def checkout(request):
             if not result['ok']:
                 _mark_order_payment_failed(order, failed_status='failed')
                 logger.error(
-                    'Checkout payment initialize failed for order %s (user=%s): %s',
+                    'Checkout payment initialize failed for order %s (user=%s): %s details=%s',
                     order.order_number,
                     request.user.id,
                     result['message'],
+                    json.dumps(result.get('details', {}), default=str),
                 )
                 messages.error(request, f"Unable to initialize payment: {result['message']}")
                 return redirect('orders:order_history')
@@ -381,17 +454,18 @@ def paystack_initialize(request, order_number):
 
     callback_url = request.build_absolute_uri(reverse('orders:payment_verify'))
 
-    if not order.paystack_reference:
-        order.paystack_reference = _build_paystack_reference(order)
-        order.save(update_fields=['paystack_reference', 'updated_at'])
+    # Always rotate the reference before each new initialize attempt to avoid Paystack duplicate reference conflicts.
+    order.paystack_reference = _build_paystack_reference(order)
+    order.save(update_fields=['paystack_reference', 'updated_at'])
 
     result = _initialize_paystack_with_retry(order, request.user, callback_url, max_attempts=3)
     if not result['ok']:
         logger.error(
-            'Paystack initialize failed after retries for order %s (user=%s): %s',
+            'Paystack initialize failed after retries for order %s (user=%s): %s details=%s',
             order.paystack_reference,
             request.user.id,
             result['message'],
+            json.dumps(result.get('details', {}), default=str),
         )
         messages.error(request, f"Unable to initialize payment: {result['message']}")
         return redirect('orders:order_history')
