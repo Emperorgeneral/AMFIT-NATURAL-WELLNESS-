@@ -35,14 +35,16 @@ def home(request):
         if not top_sellers.exclude(total_ordered__isnull=True).exists():
             top_sellers = Product.objects.filter(status='active').order_by('-created_at')
 
-        categories = (
+        all_categories = Category.objects.order_by('name')
+
+        active_categories = (
             Category.objects.filter(products__status='active')
             .distinct()
             .order_by('name')
         )
 
         category_sections = []
-        for category in categories:
+        for category in active_categories:
             section_products = (
                 Product.objects.filter(category=category, status='active')
                 .order_by('-created_at')[:10]
@@ -60,7 +62,7 @@ def home(request):
 
     context = {
         'top_sellers': top_sellers[:10],
-        'categories': categories[:16] if _db_ready() else Category.objects.none(),
+        'categories': all_categories[:16] if _db_ready() else Category.objects.none(),
         'category_sections': category_sections,
     }
     return render(request, 'products/home.html', context)
