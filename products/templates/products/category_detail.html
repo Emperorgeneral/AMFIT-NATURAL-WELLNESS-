@@ -116,6 +116,9 @@
                 {% for product in products %}
                 <a href="{% url 'products:product_detail' product.slug %}" class="product-card">
                     <div class="product-image">
+                        {% if product.is_on_sale %}
+                            <span class="product-flag">-{{ product.discount_percentage }}%</span>
+                        {% endif %}
                         {% if product.image %}
                             <img src="{{ product.image.url }}" alt="{{ product.name }}">
                         {% else %}
@@ -123,10 +126,20 @@
                         {% endif %}
                     </div>
                     <div class="product-info">
-                        <div class="product-name">{{ product.name|truncatewords:3 }}</div>
+                        <div class="product-meta-top">
+                            <span class="product-subline">{{ product.subcategory.name }}</span>
+                            {% if product.stock_quantity > 10 %}
+                                <span class="product-stock in-stock">In stock</span>
+                            {% elif product.stock_quantity > 0 %}
+                                <span class="product-stock low-stock">Low stock</span>
+                            {% else %}
+                                <span class="product-stock out-stock">Out of stock</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-name">{{ product.name }}</div>
                         {% if product.is_on_sale %}
-                            <div class="product-price">
-                                ₦{{ product.discounted_price }}
+                            <div class="product-price product-price-row">
+                                <span>₦{{ product.discounted_price }}</span>
                                 <span class="original-price">₦{{ product.price }}</span>
                                 <span class="discount-badge">-{{ product.discount_percentage }}%</span>
                             </div>
@@ -135,6 +148,8 @@
                         {% endif %}
                         {% if product.rating %}
                             <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }} reviews)</div>
+                        {% else %}
+                            <div class="product-rating muted">New arrival</div>
                         {% endif %}
                         <div class="product-cta-wrap">
                             <span class="btn btn-primary product-cta-full">View product</span>

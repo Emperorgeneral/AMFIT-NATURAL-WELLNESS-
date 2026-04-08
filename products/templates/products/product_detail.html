@@ -257,6 +257,9 @@
             {% for related in related_products %}
             <a href="{% url 'products:product_detail' related.slug %}" class="product-card">
                 <div class="product-image">
+                    {% if related.is_on_sale %}
+                        <span class="product-flag">-{{ related.discount_percentage }}%</span>
+                    {% endif %}
                     {% if related.image %}
                         <img src="{{ related.image.url }}" alt="{{ related.name }}">
                     {% else %}
@@ -264,15 +267,30 @@
                     {% endif %}
                 </div>
                 <div class="product-info">
-                    <div class="product-name">{{ related.name|truncatewords:3 }}</div>
+                    <div class="product-meta-top">
+                        <span class="product-subline">{{ related.subcategory.name }}</span>
+                        {% if related.stock_quantity > 10 %}
+                            <span class="product-stock in-stock">In stock</span>
+                        {% elif related.stock_quantity > 0 %}
+                            <span class="product-stock low-stock">Low stock</span>
+                        {% else %}
+                            <span class="product-stock out-stock">Out of stock</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-name">{{ related.name }}</div>
                     {% if related.is_on_sale %}
-                        <div class="product-price">
-                            ₦{{ related.discounted_price }}
+                        <div class="product-price product-price-row">
+                            <span>₦{{ related.discounted_price }}</span>
                             <span class="original-price">₦{{ related.price }}</span>
                             <span class="discount-badge">-{{ related.discount_percentage }}%</span>
                         </div>
                     {% else %}
                         <div class="product-price">₦{{ related.price }}</div>
+                    {% endif %}
+                    {% if related.rating %}
+                        <div class="product-rating">⭐ {{ related.rating }} ({{ related.review_count }} reviews)</div>
+                    {% else %}
+                        <div class="product-rating muted">New arrival</div>
                     {% endif %}
                     <div class="product-cta-wrap">
                         <span class="btn btn-primary product-cta-full">View product</span>
