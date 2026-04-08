@@ -18,8 +18,8 @@ def _db_ready():
 def home(request):
     """Home page with featured products"""
     if _db_ready():
-        featured_products = Product.objects.filter(status='active')[:8]
-        categories = Category.objects.all()
+        featured_products = Product.objects.filter(status='active')[:10]
+        categories = Category.objects.all()[:16]
     else:
         featured_products = Product.objects.none()
         categories = Category.objects.none()
