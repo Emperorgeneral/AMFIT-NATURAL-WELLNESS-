@@ -61,6 +61,9 @@ class AMFITAdminSite(admin.AdminSite):
             'top_products': top_products,
             'status_breakdown': status_breakdown,
         }
+
+        # Include default admin context so sidebar/app navigation remains available.
+        context.update(self.each_context(request))
         
         return render(request, 'admin/dashboard.html', context)
     
