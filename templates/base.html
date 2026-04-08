@@ -163,9 +163,9 @@
 
         .category-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2.2rem;
         }
 
         .category-card, .product-card {
@@ -187,7 +187,7 @@
 
         .category-image {
             width: 100%;
-            height: 180px;
+            height: 150px;
             background: linear-gradient(135deg, #d9ebdf 0%, #f3e3d6 100%);
             overflow: hidden;
             display: flex;
@@ -197,14 +197,14 @@
 
         .product-image {
             width: 100%;
-            aspect-ratio: var(--product-image-ratio);
+            aspect-ratio: 1 / 0.94;
             background: #ffffff;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             border-bottom: 1px solid rgba(22, 63, 53, 0.06);
-            padding: 0.25rem;
+            padding: 0.12rem;
             position: relative;
         }
 
@@ -235,12 +235,13 @@
         }
 
         .category-info {
-            padding: 0.8rem 0.85rem 0.9rem;
+            padding: 0.65rem 0.7rem 0.75rem;
         }
 
         .category-name {
-            font-size: 0.92rem;
-            margin-bottom: 0.25rem;
+            font-size: 0.86rem;
+            margin-bottom: 0.18rem;
+            line-height: 1.25;
         }
 
         .product-card {
@@ -271,9 +272,9 @@
         .product-info {
             display: flex;
             flex-direction: column;
-            gap: 0.22rem;
+            gap: 0.18rem;
             flex: 1;
-            padding: 0.55rem 0.6rem 0.7rem;
+            padding: 0.42rem 0.5rem 0.55rem;
         }
 
         .product-meta-top {
@@ -325,10 +326,10 @@
 
         .product-name {
             font-family: 'Trebuchet MS', 'Gill Sans', sans-serif;
-            font-size: 0.93rem;
+            font-size: 0.86rem;
             font-weight: 600;
-            line-height: 1.28;
-            min-height: 2.45em;
+            line-height: 1.24;
+            min-height: 2.2em;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -339,7 +340,7 @@
         .product-price {
             color: var(--brand);
             font-weight: bold;
-            font-size: 0.98rem;
+            font-size: 0.9rem;
             margin-bottom: 0;
             line-height: 1.25;
         }
@@ -359,7 +360,7 @@
         .original-price {
             text-decoration: line-through;
             color: #8b9791;
-            font-size: 0.78rem;
+            font-size: 0.72rem;
         }
 
         .discount-badge {
@@ -368,7 +369,7 @@
 
         .product-rating {
             color: #b06d16;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             margin-bottom: 0;
             min-height: 0;
             margin-top: 0.1rem;
@@ -442,8 +443,8 @@
 
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(var(--product-card-min), 1fr));
-            gap: 0.8rem;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 0.85rem;
             margin-top: 1rem;
             align-items: stretch;
         }
@@ -972,21 +973,7 @@
             }
 
             .container {
-                padding: 1.2rem 0.55rem 2.4rem;
-            }
-
-            .featured-section {
-                padding: 0.9rem 0.55rem;
-                border-radius: 18px;
-            }
-
-            .section-head-between {
-                margin-bottom: 0.85rem;
-            }
-
-            .section-head-between .btn {
-                padding: 0.62rem 0.95rem;
-                font-size: 0.82rem;
+                padding: 1.5rem 0.75rem 3rem;
             }
 
             .category-grid {
@@ -1007,7 +994,7 @@
             }
 
             .category-image {
-                height: 98px;
+                height: 92px;
                 padding: 0.3rem;
             }
 
@@ -1016,22 +1003,22 @@
             }
 
             .category-info {
-                padding: 0.45rem 0.45rem 0.55rem;
+                padding: 0.38rem 0.4rem 0.46rem;
             }
 
             .category-name {
-                font-size: 0.74rem;
+                font-size: 0.7rem;
                 line-height: 1.2;
             }
 
             .category-desc-sm {
-                font-size: 0.66rem;
+                font-size: 0.62rem;
                 line-height: 1.15;
             }
 
             .product-image {
                 padding: 0.1rem;
-                aspect-ratio: 1 / 0.92;
+                aspect-ratio: 1 / 0.88;
             }
 
             .product-flag {
@@ -1048,21 +1035,21 @@
             }
 
             .product-name {
-                font-size: 0.72rem;
-                min-height: 2.05em;
+                font-size: 0.68rem;
+                min-height: 1.95em;
                 line-height: 1.22;
             }
 
             .product-price {
-                font-size: 0.76rem;
+                font-size: 0.74rem;
             }
 
             .original-price {
-                font-size: 0.64rem;
+                font-size: 0.6rem;
             }
 
             .product-rating {
-                font-size: 0.62rem;
+                font-size: 0.58rem;
             }
 
             .auth-card {
@@ -1101,24 +1088,20 @@
                 padding-right: 0.45rem;
             }
 
-            .featured-section {
-                padding: 0.8rem 0.45rem;
-            }
-
             .category-image {
-                height: 90px;
+                height: 84px;
             }
 
             .product-image {
-                aspect-ratio: 1 / 0.9;
+                aspect-ratio: 1 / 0.86;
             }
 
             .product-name {
-                font-size: 0.69rem;
+                font-size: 0.66rem;
             }
 
             .product-price {
-                font-size: 0.72rem;
+                font-size: 0.7rem;
             }
         }
     </style>

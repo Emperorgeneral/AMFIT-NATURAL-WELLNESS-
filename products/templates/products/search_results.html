@@ -68,16 +68,6 @@
                         {% endif %}
                     </div>
                     <div class="product-info">
-                        <div class="product-meta-top">
-                            <span class="product-subline">{{ product.subcategory.name }}</span>
-                            {% if product.stock_quantity > 10 %}
-                                <span class="product-stock in-stock">In stock</span>
-                            {% elif product.stock_quantity > 0 %}
-                                <span class="product-stock low-stock">Low stock</span>
-                            {% else %}
-                                <span class="product-stock out-stock">Out of stock</span>
-                            {% endif %}
-                        </div>
                         <div class="product-name">{{ product.name }}</div>
                         {% if product.is_on_sale %}
                             <div class="product-price product-price-row">
@@ -90,8 +80,6 @@
                         {% endif %}
                         {% if product.rating %}
                             <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }} reviews)</div>
-                        {% else %}
-                            <div class="product-rating muted">New arrival</div>
                         {% endif %}
                         <div class="product-cta-wrap">
                             <span class="btn btn-primary product-cta-full">View Details</span>
