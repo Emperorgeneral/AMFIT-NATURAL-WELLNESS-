@@ -11,14 +11,27 @@
     }
     .image-fallback { color: #999; }
     .category-desc {
-        font-size: 0.9rem;
+        font-size: 0.78rem;
         color: var(--muted);
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+        flex: 1;
     }
-    .category-count-wrap { margin-top: 1rem; }
+    .category-count-wrap { margin-top: auto; padding-top: 0.4rem; }
     .category-count {
-        font-size: 0.88rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.76rem;
         color: var(--brand);
         font-weight: 700;
+        background: rgba(15, 92, 77, 0.08);
+        padding: 0.18rem 0.55rem;
+        border-radius: 999px;
     }
     .empty-state-title {
         display: block;
@@ -52,10 +65,10 @@
             <div class="category-info">
                 <div class="category-name">{{ category.name }}</div>
                 {% if category.description %}
-                    <p class="category-desc">{{ category.description|truncatewords:16 }}</p>
+                    <p class="category-desc">{{ category.description }}</p>
                 {% endif %}
                 <div class="category-count-wrap">
-                    <p class="category-count">{{ category.products.count }} products</p>
+                    <span class="category-count">{{ category.products.count }} products</span>
                 </div>
             </div>
         </a>

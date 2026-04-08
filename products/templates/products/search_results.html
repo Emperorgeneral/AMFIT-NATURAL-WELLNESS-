@@ -8,7 +8,7 @@
 .sr-title { color: #f8f4ec; margin-bottom: 0.5rem; }
 .btn-full { width: 100%; }
 .image-fallback { color: #999; }
-.product-cta-wrap { margin-top: 0.75rem; }
+.product-cta-wrap { margin-top: auto; }
 .product-cta-full { width: 100%; text-align: center; }
 .empty-state-title { display: block; margin-bottom: 0.35rem; }
 </style>
@@ -58,28 +58,27 @@
                 {% for product in products %}
                 <a href="{% url 'products:product_detail' product.slug %}" class="product-card">
                     <div class="product-image">
-                        {% if product.is_on_sale %}
-                            <span class="product-flag">-{{ product.discount_percentage }}%</span>
-                        {% endif %}
                         {% if product.image %}
                             <img src="{{ product.image.url }}" alt="{{ product.name }}">
                         {% else %}
                             <span class="image-fallback">No Image</span>
                         {% endif %}
+                        {% if product.is_on_sale %}
+                            <span class="img-discount-badge">-{{ product.discount_percentage }}%</span>
+                        {% endif %}
                     </div>
                     <div class="product-info">
                         <div class="product-name">{{ product.name }}</div>
                         {% if product.is_on_sale %}
-                            <div class="product-price product-price-row">
-                                <span>₦{{ product.discounted_price }}</span>
+                            <div class="product-price">
+                                ₦{{ product.discounted_price }}
                                 <span class="original-price">₦{{ product.price }}</span>
-                                <span class="discount-badge">-{{ product.discount_percentage }}%</span>
                             </div>
                         {% else %}
                             <div class="product-price">₦{{ product.price }}</div>
                         {% endif %}
                         {% if product.rating %}
-                            <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }} reviews)</div>
+                            <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }})</div>
                         {% endif %}
                         <div class="product-cta-wrap">
                             <span class="btn btn-primary product-cta-full">View Details</span>
