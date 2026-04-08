@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Avg, Q
+from django.db.models import Avg, Q, Sum
 from django.db.utils import OperationalError, ProgrammingError
 from django.core.paginator import Paginator
 from .models import Product, Category, Subcategory, ProductReview
@@ -18,14 +18,49 @@ def _db_ready():
 def home(request):
     """Home page with featured products"""
     if _db_ready():
-        featured_products = Product.objects.filter(status='active')[:10]
-        categories = Category.objects.all()[:16]
+        selling_statuses = ['processing', 'ready', 'shipped', 'delivered']
+
+        top_sellers = (
+            Product.objects.filter(status='active')
+            .annotate(
+                total_ordered=Sum(
+                    'orderitem__quantity',
+                    filter=Q(orderitem__order__status__in=selling_statuses),
+                )
+            )
+            .order_by('-total_ordered', '-created_at')
+        )
+
+        # Fallback to newest active products when there are no order stats yet.
+        if not top_sellers.exclude(total_ordered__isnull=True).exists():
+            top_sellers = Product.objects.filter(status='active').order_by('-created_at')
+
+        categories = (
+            Category.objects.filter(products__status='active')
+            .distinct()
+            .order_by('name')
+        )
+
+        category_sections = []
+        for category in categories:
+            section_products = (
+                Product.objects.filter(category=category, status='active')
+                .order_by('-created_at')[:10]
+            )
+            if section_products:
+                category_sections.append(
+                    {
+                        'category': category,
+                        'products': section_products,
+                    }
+                )
     else:
-        featured_products = Product.objects.none()
-        categories = Category.objects.none()
+        top_sellers = Product.objects.none()
+        category_sections = []
+
     context = {
-        'featured_products': featured_products,
-        'categories': categories,
+        'top_sellers': top_sellers[:10],
+        'category_sections': category_sections,
     }
     return render(request, 'products/home.html', context)
 

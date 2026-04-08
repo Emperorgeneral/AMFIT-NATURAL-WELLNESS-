@@ -97,43 +97,15 @@
         color: var(--muted);
     }
     .image-fallback { color: #999; }
-    .category-desc-sm {
-        font-size: 12px;
-        color: #666;
-    }
-    .home-category-grid {
-        display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 1rem;
-    }
-    .home-category-grid .category-card:nth-child(n+17) {
-        display: none;
-    }
-    .home-category-grid .category-card {
-        min-width: 0;
-    }
-    .home-category-grid .category-image {
-        aspect-ratio: 1 / 1;
-    }
-    .home-category-grid .category-info {
-        padding: 0.55rem 0.55rem 0.62rem;
-    }
-    .home-category-grid .category-name {
-        font-size: 0.78rem;
-        margin-bottom: 0.2rem;
-    }
-    .home-category-grid .category-desc-sm {
-        font-size: 0.68rem;
-        line-height: 1.35;
-    }
     .empty-state-title {
         display: block;
         margin-bottom: 0.35rem;
     }
-    .featured-products-panel {
+    .rail-panel {
         padding: 1.75rem;
+        margin-top: 1.4rem;
     }
-    .featured-products-head {
+    .rail-head {
         display: flex;
         justify-content: space-between;
         align-items: end;
@@ -141,16 +113,20 @@
         margin-bottom: 1rem;
         flex-wrap: wrap;
     }
-    .featured-see-all {
+    .rail-title {
+        font-family: Georgia, 'Times New Roman', serif;
+        color: var(--ink);
+    }
+    .rail-see-all {
         color: var(--brand);
         font-weight: 700;
         text-decoration: none;
         font-size: 0.95rem;
     }
-    .featured-see-all:hover {
+    .rail-see-all:hover {
         text-decoration: underline;
     }
-    .featured-product-grid {
+    .rail-track {
         display: flex;
         flex-wrap: nowrap;
         gap: 1rem;
@@ -162,40 +138,42 @@
         scrollbar-width: thin;
         margin-top: 0;
     }
-    .featured-product-card {
+    .rail-card {
         border-radius: 14px;
         flex: 0 0 156px;
         max-width: 156px;
         width: 156px;
         scroll-snap-align: start;
     }
-    .featured-product-card .product-image {
+    .rail-card .product-image {
         aspect-ratio: 1 / 0.92;
     }
-    .featured-product-card .product-image img {
+    .rail-card .product-image img {
         padding: 12px;
     }
-    .featured-product-card .product-info {
+    .rail-card .product-info {
         padding: 0.58rem 0.65rem 0.72rem;
     }
-    .featured-product-card .product-name {
+    .rail-card .product-name {
         font-size: 0.76rem;
         margin-bottom: 0.24rem;
     }
-    .featured-product-card .product-price {
+    .rail-card .product-price {
         font-size: 0.88rem;
         margin-bottom: 0.18rem;
     }
-    .featured-product-card .product-rating {
+    .rail-card .product-rating {
         font-size: 0.72rem;
         margin-bottom: 0;
+    }
+    .rail-footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 0.65rem;
     }
     @media (max-width: 980px) {
         .hero-stats {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-        .home-category-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
     }
     @media (max-width: 768px) {
@@ -211,45 +189,35 @@
         }
         .hero-stat strong { font-size: 1rem; }
         .hero-stat span { font-size: 0.8rem; }
-        .home-category-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 0.7rem;
-        }
-        .home-category-grid .category-card:nth-child(n+9) {
-            display: none;
-        }
-        .featured-products-panel {
+        .rail-panel {
             padding: 1.25rem;
         }
-        .featured-product-grid {
+        .rail-track {
             gap: 0.85rem;
         }
-        .featured-product-card {
+        .rail-card {
             flex: 0 0 136px;
             max-width: 136px;
             width: 136px;
         }
-        .featured-product-card .product-info {
+        .rail-card .product-info {
             padding: 0.54rem 0.58rem 0.64rem;
         }
-        .featured-product-card .product-name {
+        .rail-card .product-name {
             font-size: 0.72rem;
         }
-        .featured-product-card .product-price {
+        .rail-card .product-price {
             font-size: 0.82rem;
         }
     }
     @media (max-width: 420px) {
-        .featured-products-panel {
+        .rail-panel {
             padding: 1rem;
         }
-        .home-category-grid {
-            gap: 0.58rem;
-        }
-        .featured-product-grid {
+        .rail-track {
             gap: 0.78rem;
         }
-        .featured-product-card {
+        .rail-card {
             flex: 0 0 128px;
             max-width: 128px;
             width: 128px;
@@ -294,50 +262,17 @@
         </div>
     </section>
 
-    <section>
-        <div class="section-head-between">
+    <section class="featured-section rail-panel">
+        <div class="rail-head">
             <div>
-                <p class="eyebrow">Browse</p>
-                <h2 class="section-title-ink">Shop by Category</h2>
+                <p class="eyebrow">Trending Now</p>
+                <h2 class="rail-title">Top Sellers</h2>
             </div>
-            <p class="section-copy-muted">Organize products into medical, vitamins, fertility, and other health-driven collections so customers can move quickly.</p>
+            <a href="{% url 'products:search_products' %}?sort=-created_at" class="rail-see-all">See All</a>
         </div>
-        <div class="category-grid home-category-grid">
-            {% for category in categories %}
-            <a href="{% url 'products:category_detail' category.slug %}" class="category-card">
-                <div class="category-image">
-                    {% if category.image %}
-                        <img src="{{ category.image.url }}" alt="{{ category.name }}" onerror="this.style.display='none'; this.parentElement.querySelector('.image-fallback').style.display='inline-flex';">
-                    {% endif %}
-                    <span class="image-fallback"{% if category.image %} style="display: none;"{% endif %}>No Image</span>
-                </div>
-                <div class="category-info">
-                    <div class="category-name">{{ category.name }}</div>
-                    {% if category.description %}
-                        <p class="category-desc-sm">{{ category.description|truncatewords:10 }}</p>
-                    {% endif %}
-                </div>
-            </a>
-            {% empty %}
-            <div class="empty-state">
-                <strong class="empty-state-title">No categories yet</strong>
-                <span>Add product categories from the admin dashboard to populate this area.</span>
-            </div>
-            {% endfor %}
-        </div>
-    </section>
-
-    <section class="featured-section featured-products-panel">
-        <div class="featured-products-head">
-            <div>
-                <p class="eyebrow">Inventory Spotlight</p>
-                <h2>Featured Products</h2>
-            </div>
-            <a href="{% url 'products:search_products' %}" class="featured-see-all">See All</a>
-        </div>
-        <div class="featured-product-grid">
-            {% for product in featured_products %}
-            <a href="{% url 'products:product_detail' product.slug %}" class="product-card featured-product-card">
+        <div class="rail-track">
+            {% for product in top_sellers %}
+            <a href="{% url 'products:product_detail' product.slug %}" class="product-card rail-card">
                 <div class="product-image">
                     {% if product.image %}
                         <img src="{{ product.image.url }}" alt="{{ product.name }}">
@@ -365,11 +300,62 @@
             </a>
             {% empty %}
             <div class="empty-state">
-                <strong class="empty-state-title">No featured products yet</strong>
-                <span>No item</span>
+                <strong class="empty-state-title">No top sellers yet</strong>
+                <span>Top sellers will appear after orders are placed.</span>
             </div>
             {% endfor %}
         </div>
     </section>
+
+    {% for section in category_sections %}
+    <section class="featured-section rail-panel">
+        <div class="rail-head">
+            <div>
+                <p class="eyebrow">Category Spotlight</p>
+                <h2 class="rail-title">{{ section.category.name }}</h2>
+            </div>
+        </div>
+        <div class="rail-track">
+            {% for product in section.products %}
+            <a href="{% url 'products:product_detail' product.slug %}" class="product-card rail-card">
+                <div class="product-image">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <span class="image-fallback">No Image</span>
+                    {% endif %}
+                    {% if product.is_on_sale %}
+                        <span class="img-discount-badge">-{{ product.discount_percentage }}%</span>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-name">{{ product.name }}</div>
+                    {% if product.is_on_sale %}
+                        <div class="product-price">
+                            ₦{{ product.discounted_price }}
+                            <span class="original-price">₦{{ product.price }}</span>
+                        </div>
+                    {% else %}
+                        <div class="product-price">₦{{ product.price }}</div>
+                    {% endif %}
+                    {% if product.rating %}
+                        <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }})</div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <div class="rail-footer">
+            <a href="{% url 'products:category_detail' section.category.slug %}" class="rail-see-all">See All</a>
+        </div>
+    </section>
+    {% empty %}
+    <section class="featured-section rail-panel">
+        <div class="empty-state">
+            <strong class="empty-state-title">No active categories yet</strong>
+            <span>Add active products to categories and they will appear here automatically.</span>
+        </div>
+    </section>
+    {% endfor %}
 </div>
 {% endblock %}
