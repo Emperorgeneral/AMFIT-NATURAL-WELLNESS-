@@ -105,10 +105,35 @@
         display: block;
         margin-bottom: 0.35rem;
     }
-    .product-cta-wrap { margin-top: 0.75rem; }
-    .product-cta-full {
-        width: 100%;
-        text-align: center;
+    .featured-products-panel {
+        padding: 1.75rem;
+    }
+    .featured-product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+        gap: 1.15rem;
+        margin-top: 1.25rem;
+    }
+    .featured-product-card {
+        border-radius: 14px;
+    }
+    .featured-product-card .product-image img {
+        padding: 10px;
+    }
+    .featured-product-card .product-info {
+        padding: 0.65rem 0.72rem 0.78rem;
+    }
+    .featured-product-card .product-name {
+        font-size: 0.8rem;
+        margin-bottom: 0.3rem;
+    }
+    .featured-product-card .product-price {
+        font-size: 0.94rem;
+        margin-bottom: 0.24rem;
+    }
+    .featured-product-card .product-rating {
+        font-size: 0.75rem;
+        margin-bottom: 0;
     }
     @media (max-width: 980px) {
         .hero-stats {
@@ -128,6 +153,30 @@
         }
         .hero-stat strong { font-size: 1rem; }
         .hero-stat span { font-size: 0.8rem; }
+        .featured-products-panel {
+            padding: 1.25rem;
+        }
+        .featured-product-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.9rem;
+        }
+        .featured-product-card .product-info {
+            padding: 0.58rem 0.62rem 0.68rem;
+        }
+        .featured-product-card .product-name {
+            font-size: 0.76rem;
+        }
+        .featured-product-card .product-price {
+            font-size: 0.88rem;
+        }
+    }
+    @media (max-width: 420px) {
+        .featured-products-panel {
+            padding: 1rem;
+        }
+        .featured-product-grid {
+            gap: 0.85rem;
+        }
     }
 </style>
 
@@ -201,7 +250,7 @@
         </div>
     </section>
 
-    <section class="featured-section">
+    <section class="featured-section featured-products-panel">
         <div class="section-head-between">
             <div>
                 <p class="eyebrow">Inventory Spotlight</p>
@@ -209,9 +258,9 @@
             </div>
             <a href="{% url 'products:category_list' %}" class="btn btn-secondary">View all categories</a>
         </div>
-        <div class="product-grid">
+        <div class="featured-product-grid">
             {% for product in featured_products %}
-            <a href="{% url 'products:product_detail' product.slug %}" class="product-card">
+            <a href="{% url 'products:product_detail' product.slug %}" class="product-card featured-product-card">
                 <div class="product-image">
                     {% if product.image %}
                         <img src="{{ product.image.url }}" alt="{{ product.name }}">
@@ -235,9 +284,6 @@
                     {% if product.rating %}
                         <div class="product-rating">⭐ {{ product.rating }} ({{ product.review_count }})</div>
                     {% endif %}
-                    <div class="product-cta-wrap">
-                        <span class="btn btn-primary product-cta-full">View Details</span>
-                    </div>
                 </div>
             </a>
             {% empty %}
