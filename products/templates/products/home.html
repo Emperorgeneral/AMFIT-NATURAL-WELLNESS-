@@ -97,6 +97,35 @@
         color: var(--muted);
     }
     .image-fallback { color: #999; }
+    .category-desc-sm {
+        font-size: 12px;
+        color: #666;
+    }
+    .home-category-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 1rem;
+    }
+    .home-category-grid .category-card:nth-child(n+17) {
+        display: none;
+    }
+    .home-category-grid .category-card {
+        min-width: 0;
+    }
+    .home-category-grid .category-image {
+        aspect-ratio: 1 / 1;
+    }
+    .home-category-grid .category-info {
+        padding: 0.55rem 0.55rem 0.62rem;
+    }
+    .home-category-grid .category-name {
+        font-size: 0.78rem;
+        margin-bottom: 0.2rem;
+    }
+    .home-category-grid .category-desc-sm {
+        font-size: 0.68rem;
+        line-height: 1.35;
+    }
     .empty-state-title {
         display: block;
         margin-bottom: 0.35rem;
@@ -175,6 +204,9 @@
         .hero-stats {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
+        .home-category-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
     }
     @media (max-width: 768px) {
         .hero-grid {
@@ -189,6 +221,13 @@
         }
         .hero-stat strong { font-size: 1rem; }
         .hero-stat span { font-size: 0.8rem; }
+        .home-category-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.7rem;
+        }
+        .home-category-grid .category-card:nth-child(n+9) {
+            display: none;
+        }
         .rail-panel {
             padding: 1.25rem;
         }
@@ -213,6 +252,9 @@
     @media (max-width: 420px) {
         .rail-panel {
             padding: 1rem;
+        }
+        .home-category-grid {
+            gap: 0.58rem;
         }
         .rail-track {
             gap: 0.78rem;
@@ -259,6 +301,39 @@
                 </div>
 
             </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-head-between">
+            <div>
+                <p class="eyebrow">Browse</p>
+                <h2 class="section-title-ink">Shop by Category</h2>
+            </div>
+            <p class="section-copy-muted">Organize products into medical, vitamins, fertility, and other health-driven collections so customers can move quickly.</p>
+        </div>
+        <div class="category-grid home-category-grid">
+            {% for category in categories %}
+            <a href="{% url 'products:category_detail' category.slug %}" class="category-card">
+                <div class="category-image">
+                    {% if category.image %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}" onerror="this.style.display='none'; this.parentElement.querySelector('.image-fallback').style.display='inline-flex';">
+                    {% endif %}
+                    <span class="image-fallback"{% if category.image %} style="display: none;"{% endif %}>No Image</span>
+                </div>
+                <div class="category-info">
+                    <div class="category-name">{{ category.name }}</div>
+                    {% if category.description %}
+                        <p class="category-desc-sm">{{ category.description|truncatewords:10 }}</p>
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-state">
+                <strong class="empty-state-title">No categories yet</strong>
+                <span>Add product categories from the admin dashboard to populate this area.</span>
+            </div>
+            {% endfor %}
         </div>
     </section>
 

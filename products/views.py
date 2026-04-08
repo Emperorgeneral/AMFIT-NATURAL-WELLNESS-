@@ -60,6 +60,7 @@ def home(request):
 
     context = {
         'top_sellers': top_sellers[:10],
+        'categories': categories[:16] if _db_ready() else Category.objects.none(),
         'category_sections': category_sections,
     }
     return render(request, 'products/home.html', context)
