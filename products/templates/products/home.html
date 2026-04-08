@@ -323,9 +323,6 @@
                 </div>
                 <div class="category-info">
                     <div class="category-name">{{ category.name }}</div>
-                    {% if category.description %}
-                        <p class="category-desc-sm">{{ category.description|truncatewords:10 }}</p>
-                    {% endif %}
                 </div>
             </a>
             {% empty %}
