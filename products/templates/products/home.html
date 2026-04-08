@@ -110,29 +110,36 @@
     }
     .featured-product-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
-        gap: 1.15rem;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 170px));
+        justify-content: center;
+        gap: 1.25rem;
         margin-top: 1.25rem;
     }
     .featured-product-card {
         border-radius: 14px;
+        max-width: 170px;
+        width: 100%;
+        margin: 0 auto;
+    }
+    .featured-product-card .product-image {
+        aspect-ratio: 1 / 0.92;
     }
     .featured-product-card .product-image img {
-        padding: 10px;
+        padding: 12px;
     }
     .featured-product-card .product-info {
-        padding: 0.65rem 0.72rem 0.78rem;
+        padding: 0.58rem 0.65rem 0.72rem;
     }
     .featured-product-card .product-name {
-        font-size: 0.8rem;
-        margin-bottom: 0.3rem;
-    }
-    .featured-product-card .product-price {
-        font-size: 0.94rem;
+        font-size: 0.76rem;
         margin-bottom: 0.24rem;
     }
+    .featured-product-card .product-price {
+        font-size: 0.88rem;
+        margin-bottom: 0.18rem;
+    }
     .featured-product-card .product-rating {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         margin-bottom: 0;
     }
     @media (max-width: 980px) {
@@ -157,17 +164,18 @@
             padding: 1.25rem;
         }
         .featured-product-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.9rem;
+            grid-template-columns: repeat(2, minmax(132px, 150px));
+            justify-content: center;
+            gap: 1rem;
         }
         .featured-product-card .product-info {
-            padding: 0.58rem 0.62rem 0.68rem;
+            padding: 0.54rem 0.58rem 0.64rem;
         }
         .featured-product-card .product-name {
-            font-size: 0.76rem;
+            font-size: 0.72rem;
         }
         .featured-product-card .product-price {
-            font-size: 0.88rem;
+            font-size: 0.82rem;
         }
     }
     @media (max-width: 420px) {
@@ -175,7 +183,8 @@
             padding: 1rem;
         }
         .featured-product-grid {
-            gap: 0.85rem;
+            grid-template-columns: repeat(2, minmax(124px, 140px));
+            gap: 0.95rem;
         }
     }
 </style>
