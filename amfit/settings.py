@@ -69,6 +69,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'amfit.middleware.SecurityHeadersMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'amfit.middleware.SimpleRateLimitMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -235,8 +236,9 @@ SESSION_ENGINE = config(
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_REFERRER_POLICY = 'same-origin'
+SECURE_REFERRER_POLICY = config('SECURE_REFERRER_POLICY', default='strict-origin-when-cross-origin')
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+SECURE_CROSS_ORIGIN_RESOURCE_POLICY = config('SECURE_CROSS_ORIGIN_RESOURCE_POLICY', default='same-site')
 X_FRAME_OPTIONS = 'DENY'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
@@ -246,12 +248,31 @@ SESSION_COOKIE_DOMAIN = config('SESSION_COOKIE_DOMAIN', default=None)
 CSRF_COOKIE_DOMAIN = config('CSRF_COOKIE_DOMAIN', default=None)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+RATE_LIMIT_TRUSTED_PROXIES = config('RATE_LIMIT_TRUSTED_PROXIES', default='', cast=Csv())
+PERMISSIONS_POLICY = config(
+    'PERMISSIONS_POLICY',
+    default='camera=(), microphone=(), geolocation=(), payment=(self)',
+)
+CONTENT_SECURITY_POLICY = config(
+    'CONTENT_SECURITY_POLICY',
+    default=(
+        "default-src 'self'; "
+        "img-src 'self' data: https:; "
+        "script-src 'self' 'unsafe-inline' https://js.paystack.co https://www.googletagmanager.com https://www.gstatic.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' data: https://fonts.gstatic.com; "
+        "connect-src 'self' https://api.paystack.co; "
+        "frame-src 'self' https://checkout.paystack.com https://js.paystack.co; "
+        "form-action 'self' https://checkout.paystack.com; "
+        "base-uri 'self'; object-src 'none'; frame-ancestors 'none'; upgrade-insecure-requests"
+    ),
+)
 
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 

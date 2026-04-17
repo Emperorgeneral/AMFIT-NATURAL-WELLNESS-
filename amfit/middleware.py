@@ -1,5 +1,33 @@
+import logging
+
+from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
+
+
+logger = logging.getLogger(__name__)
+
+
+class SecurityHeadersMiddleware:
+    """Attach defensive HTTP headers to every response."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        # Only set headers when upstream did not already define them.
+        response.setdefault('X-Content-Type-Options', 'nosniff')
+        response.setdefault('Referrer-Policy', getattr(settings, 'SECURE_REFERRER_POLICY', 'strict-origin-when-cross-origin'))
+        response.setdefault('Permissions-Policy', getattr(settings, 'PERMISSIONS_POLICY', 'camera=(), microphone=(), geolocation=()'))
+        response.setdefault('Cross-Origin-Resource-Policy', getattr(settings, 'SECURE_CROSS_ORIGIN_RESOURCE_POLICY', 'same-site'))
+
+        csp = getattr(settings, 'CONTENT_SECURITY_POLICY', '')
+        if csp:
+            response.setdefault('Content-Security-Policy', csp)
+
+        return response
 
 
 class SimpleRateLimitMiddleware:
@@ -53,10 +81,19 @@ class SimpleRateLimitMiddleware:
                 break
 
             if count >= rule['limit']:
-                return HttpResponse(
+                logger.warning(
+                    'Rate limit hit for ip=%s path=%s method=%s rule=%s',
+                    client_ip,
+                    path,
+                    method,
+                    index,
+                )
+                response = HttpResponse(
                     'Too many requests. Please wait a moment and try again.',
                     status=429,
                 )
+                response['Retry-After'] = str(rule['window'])
+                return response
 
             try:
                 cache.incr(key)
@@ -68,12 +105,20 @@ class SimpleRateLimitMiddleware:
 
     @staticmethod
     def _get_client_ip(request):
-        cf_ip = request.META.get('HTTP_CF_CONNECTING_IP')
-        if cf_ip:
-            return cf_ip.strip()
+        remote_addr = (request.META.get('REMOTE_ADDR') or '').strip()
+        trusted_proxies = set(getattr(settings, 'RATE_LIMIT_TRUSTED_PROXIES', []))
 
-        forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
-        if forwarded_for:
-            return forwarded_for.split(',')[0].strip()
+        # Only trust forwarding headers when the request came from an explicit proxy.
+        if remote_addr and remote_addr in trusted_proxies:
+            cf_ip = request.META.get('HTTP_CF_CONNECTING_IP')
+            if cf_ip:
+                return cf_ip.strip()
 
-        return request.META.get('REMOTE_ADDR', 'unknown')
+            forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
+            if forwarded_for:
+                return forwarded_for.split(',')[0].strip()
+
+        if remote_addr:
+            return remote_addr
+
+        return 'unknown'
